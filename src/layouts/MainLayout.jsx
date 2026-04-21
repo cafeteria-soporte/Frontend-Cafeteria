@@ -256,12 +256,18 @@ export const MainLayout = ({ rol = "admin" }) => {
               )}
 
               {/* Logout */}
+           {/* Logout en MainLayout.jsx */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="rounded-full w-9 h-9 text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-colors"
                 onClick={() => {
-                  // TODO: conectar con lógica de logout del AuthProvider
+                  // Limpiamos los datos guardados
+                  localStorage.removeItem('accessToken');
+                  localStorage.removeItem('userRole');
+                  localStorage.removeItem('userData');
+                  
+                  // Redirigimos al login
                   window.location.href = ROUTES.LOGIN;
                 }}
               >

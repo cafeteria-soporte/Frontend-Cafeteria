@@ -7,12 +7,12 @@ import { MainLayout } from "@/layouts/MainLayout";
 // ════════════════════════════════════════════════════════
 import { PantallaLogin }                    from "@/features/auth/pages/PantallaLogin";
 import { PantallaCambioContraseña }         from "@/features/auth/pages/PantallaCambioContraseña";
-import { PantallaCambioContraseñaCajero }   from "@/features/auth/pages/PantallaCmabioCotraseñaCajero";
+import { PantallaCambioContraseñaCajero}   from "@/features/auth/pages/PantallaCmabioCotrasenaCajero";
 import { SesionExpirada }                   from "@/features/auth/pages/SesionExpirada";
 
 // ════════════════════════════════════════════════════════
 //  PÁGINAS COMUNES
-// ════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  Gemina
 import { PantallaPerfil }                   from "@/pages/PantallaPerfil";
 import { PantallaAccesoNoAutorizado }       from "@/pages/PantallaAccesoNoAutorizado";
@@ -64,142 +64,88 @@ import { PantallaVentaIndividual }          from "@/features/pos/pages/PantallaV
 // ════════════════════════════════════════════════════════
 //  RUTAS
 // ════════════════════════════════════════════════════════
+const ProtectedRoute = ({ allowedRoles }) => {
+  const token = localStorage.getItem('accessToken');
+  const userRole = localStorage.getItem('userRole');
+
+  // Si no hay token, lo mandamos al login
+  if (!token) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  // Si el rol del usuario no está en la lista de roles permitidos para esta ruta
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to={ROUTES.NO_AUTORIZADO} replace />;
+  }
+
+  // Si todo está bien, renderizamos el Layout correspondiente pasándole el rol
+  return <MainLayout rol={userRole} />;
+};
+
+// ════════════════════════════════════════════════════════
+//  RUTAS
+// ════════════════════════════════════════════════════════
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* ══════════════════════════════════════════════
-            RUTAS PÚBLICAS  (sin layout)
-        ══════════════════════════════════════════════ */}
-
-        {/* Raíz → login */}
+        {/* ════ RUTAS PÚBLICAS ════ */}
         <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
-
-        {/* Auth — Gemina */}
-        <Route path={ROUTES.LOGIN}           element={<PantallaLogin />} />
+        <Route path={ROUTES.LOGIN} element={<PantallaLogin />} />
         <Route path={ROUTES.SESION_EXPIRADA} element={<SesionExpirada />} />
-
-        {/* Cuenta desactivada — Sergio */}
         <Route path={ROUTES.CUENTA_DESACTIVADA} element={<CuentaDesactivada />} />
-
-        {/* Sin autorización — Gemina */}
-        <Route path={ROUTES.NO_AUTORIZADO}   element={<PantallaAccesoNoAutorizado />} />
+        <Route path={ROUTES.NO_AUTORIZADO} element={<PantallaAccesoNoAutorizado />} />
 
 
-        {/* ══════════════════════════════════════════════
-            ROL: ROOT  (superusuario)
-            Pantallas: Gemina (login/pass) · Sergio (admins)
-        ══════════════════════════════════════════════ */}
-        <Route element={<MainLayout rol="root" />}>
-
-          {/* Redirección /root → dashboard root */}
+        {/* ════ ROL: ROOT ════ */}
+        {/* Envolvemos en ProtectedRoute y le decimos que solo 'root' puede entrar */}
+        <Route element={<ProtectedRoute allowedRoles={['root']} />}>
           <Route path="/root" element={<Navigate to={ROUTES.ROOT_DASHBOARD} replace />} />
-
-          {/* Dashboard Root — usa el mismo componente de Andrea como base */}
-          <Route path={ROUTES.ROOT_DASHBOARD}       element={<DashboardAdminPage />} />
-
-          {/* Gestión de administradores — Sergio */}
+          <Route path={ROUTES.ROOT_DASHBOARD} element={<DashboardAdminPage />} />
           <Route path={ROUTES.ROOT_ADMINISTRADORES} element={<PantallaGestionAdministradores />} />
-
-          {/* Logs de auditoría — (pantalla pendiente, placeholder) */}
-          <Route path={ROUTES.ROOT_LOGS}            element={<div className="p-8 text-muted-foreground">Logs de auditoría — en construcción</div>} />
-
-          {/* Configuración global — (pantalla pendiente, placeholder) */}
-          <Route path={ROUTES.ROOT_CONFIGURACION}   element={<div className="p-8 text-muted-foreground">Configuración global — en construcción</div>} />
-
-          {/* Backups — (pantalla pendiente, placeholder) */}
-          <Route path={ROUTES.ROOT_BACKUPS}         element={<div className="p-8 text-muted-foreground">Gestión de backups — en construcción</div>} />
-
-          {/* Comunes dentro del layout root */}
-          <Route path={ROUTES.PERFIL}               element={<PantallaPerfil />} />
-          <Route path={ROUTES.CAMBIO_CONTRASENA}    element={<PantallaCambioContraseña />} />
-
-        </Route>
-
-
-        {/* ══════════════════════════════════════════════
-            ROL: ADMINISTRADOR
-            Pantallas: Andrea (dashboard, productos, inventario,
-                       categorías, notificaciones)
-                       Sergio (cajeros, turnos)
-                       Gemina (perfil, cambio contraseña)
-        ══════════════════════════════════════════════ */}
-        <Route element={<MainLayout rol="admin" />}>
-
-          {/* Redirección /admin → dashboard */}
-          <Route path="/admin" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
-
-          {/* Dashboard — Andrea */}
-          <Route path={ROUTES.DASHBOARD}       element={<DashboardAdminPage />} />
-
-          {/* Cajeros — Sergio */}
-          <Route path={ROUTES.CAJEROS}         element={<PantallaGestionCajeros />} />
-
-          {/* Productos — Andrea */}
-          <Route path={ROUTES.PRODUCTOS}       element={<PantallaGestionProductos />} />
-
-          {/* Categorías — Andrea */}
-          <Route path={ROUTES.CATEGORIAS}      element={<PantallaGestionCategorias />} />
-
-          {/* Inventario — Andrea */}
-          <Route path={ROUTES.AJUSTE_STOCK}    element={<PantallaAjusteStock />} />
-          <Route path={ROUTES.HISTORIAL_STOCK} element={<HistorialMovimientosStock />} />
-
-          {/* Turnos — Sergio */}
-          <Route path={ROUTES.TURNOS}          element={<PantallaTurnos />} />
-
-          {/* Logs auditoría admin — (placeholder) */}
-          <Route path={ROUTES.LOGS_ADMIN}      element={<div className="p-8 text-muted-foreground">Logs de auditoría — en construcción</div>} />
-
-          {/* Notificaciones — Andrea (panel de alertas) */}
-          <Route path={ROUTES.NOTIFICACIONES}  element={<div className="p-8 text-muted-foreground">Panel de notificaciones — en construcción</div>} />
-
-          {/* Comunes dentro del layout admin */}
-          <Route path={ROUTES.PERFIL}              element={<PantallaPerfil />} />
-          <Route path={ROUTES.CAMBIO_CONTRASENA}   element={<PantallaCambioContraseña />} />
-
-        </Route>
-
-
-        {/* ══════════════════════════════════════════════
-            ROL: CAJERO
-            Pantallas: Sergio (pre-turno, POS, ventas,
-                       resultado cierre)
-                       Gemina (perfil, cambio contraseña)
-        ══════════════════════════════════════════════ */}
-        <Route element={<MainLayout rol="cajero" />}>
-
-          {/* Redirección /cajero → pre-turno */}
-          <Route path="/cajero" element={<Navigate to={ROUTES.PRE_TURNO} replace />} />
-
-          {/* Pre-turno — Sergio */}
-          <Route path={ROUTES.PRE_TURNO}       element={<PantallaPreTurno />} />
-
-          {/* POS — Sergio */}
-          <Route path={ROUTES.POS}             element={<PantallaPos />} />
-
-          {/* Ventas del turno actual — Sergio */}
-          <Route path={ROUTES.VENTAS_TURNO}    element={<PantallaVentasTurnoActual />} />
-
-          {/* Detalle de venta individual — Sergio */}
-          <Route path={ROUTES.VENTA_INDIVIDUAL} element={<PantallaVentaIndividual />} />
-
-          {/* Resultado de cierre de turno — Sergio */}
-          <Route path="/resultado-cierre"      element={<PantallaResultadoCierreTurno />} />
-
-          {/* Cambio contraseña obligatorio primer login — Gemina */}
+          <Route path={ROUTES.ROOT_LOGS} element={<div>Logs</div>} />
+          <Route path={ROUTES.ROOT_CONFIGURACION} element={<div>Config</div>} />
+          <Route path={ROUTES.ROOT_BACKUPS} element={<div>Backups</div>} />
+          
+          {/* Rutas compartidas pero bajo el layout de root */}
+          <Route path={ROUTES.PERFIL} element={<PantallaPerfil />} />
           <Route path={ROUTES.CAMBIO_CONTRASENA} element={<PantallaCambioContraseñaCajero />} />
-
-          {/* Perfil — Gemina */}
-          <Route path={ROUTES.PERFIL}          element={<PantallaPerfil />} />
-
         </Route>
 
 
-        {/* ══════════════════════════════════════════════
-            CATCH-ALL  →  sin autorización
-        ══════════════════════════════════════════════ */}
+        {/* ════ ROL: ADMINISTRADOR ════ */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+          <Route path={ROUTES.DASHBOARD} element={<DashboardAdminPage />} />
+          <Route path={ROUTES.CAJEROS} element={<PantallaGestionCajeros />} />
+          <Route path={ROUTES.PRODUCTOS} element={<PantallaGestionProductos />} />
+          <Route path={ROUTES.CATEGORIAS} element={<PantallaGestionCategorias />} />
+          <Route path={ROUTES.AJUSTE_STOCK} element={<PantallaAjusteStock />} />
+          <Route path={ROUTES.HISTORIAL_STOCK} element={<HistorialMovimientosStock />} />
+          <Route path={ROUTES.TURNOS} element={<PantallaTurnos />} />
+          <Route path={ROUTES.LOGS_ADMIN} element={<div>Logs</div>} />
+          <Route path={ROUTES.NOTIFICACIONES} element={<div>Notificaciones</div>} />
+          
+          <Route path={ROUTES.PERFIL} element={<PantallaPerfil />} />
+          <Route path={ROUTES.CAMBIO_CONTRASENA} element={<PantallaCambioContraseñaCajero />} />
+        </Route>
+
+
+        {/* ════ ROL: CAJERO ════ */}
+        <Route element={<ProtectedRoute allowedRoles={['cajero']} />}>
+          <Route path="/cajero" element={<Navigate to={ROUTES.PRE_TURNO} replace />} />
+          <Route path={ROUTES.PRE_TURNO} element={<PantallaPreTurno />} />
+          <Route path={ROUTES.POS} element={<PantallaPos />} />
+          <Route path={ROUTES.VENTAS_TURNO} element={<PantallaVentasTurnoActual />} />
+          <Route path={ROUTES.VENTA_INDIVIDUAL} element={<PantallaVentaIndividual />} />
+          <Route path="/resultado-cierre" element={<PantallaResultadoCierreTurno />} />
+                    <Route path={ROUTES.CAMBIO_CONTRASENA} element={<PantallaCambioContraseñaCajero />} />
+
+          <Route path={ROUTES.PERFIL} element={<PantallaPerfil />} />
+        </Route>
+
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to={ROUTES.NO_AUTORIZADO} replace />} />
 
       </Routes>
