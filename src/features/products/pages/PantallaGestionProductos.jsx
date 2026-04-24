@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Search,
@@ -6,10 +7,11 @@ import {
   AlertTriangle,
   Boxes,
   Pencil,
-  Warehouse,
+  History,
 } from "lucide-react";
 import { ModalFormProducto } from "../components/ModalFormProducto";
 import { ModalConsultarStock } from "../components/ModalConsultarStock";
+import { ROUTES } from "@/utils/constants";
 
 const productosBase = [
   {
@@ -197,20 +199,39 @@ const obtenerClaseMovimiento = (tipo) => {
 };
 
 export const PantallaGestionProductos = () => {
+  const navigate = useNavigate();
   const [busqueda, setBusqueda] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("Todas");
+  const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const [soloStockBajo, setSoloStockBajo] = useState(false);
   const [productos, setProductos] = useState(productosBase);
   const [historial] = useState(historialBase);
   const [openModalProducto, setOpenModalProducto] = useState(false);
   const [openModalStock, setOpenModalStock] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
+  const categorias = useMemo(
+    () => ["Todas", ...new Set(productos.map((p) => p.categoria))],
+    [productos],
+  );
+
   const productosFiltrados = useMemo(() => {
-    return productos.filter((producto) =>
-      `${producto.nombre} ${producto.categoria} ${producto.estado}`
-        .toLowerCase()
-        .includes(busqueda.toLowerCase()),
-    );
-  }, [productos, busqueda]);
+    return productos.filter((producto) => {
+      const coincideTexto =
+        `${producto.nombre} ${producto.categoria} ${producto.estado}`
+          .toLowerCase()
+          .includes(busqueda.toLowerCase());
+      const coincideCategoria =
+        filtroCategoria === "Todas" || producto.categoria === filtroCategoria;
+      const coincideEstado =
+        filtroEstado === "Todos" || producto.estado === filtroEstado;
+      const coincideStock =
+        !soloStockBajo || producto.stock <= producto.stockMinimo;
+      return (
+        coincideTexto && coincideCategoria && coincideEstado && coincideStock
+      );
+    });
+  }, [productos, busqueda, filtroCategoria, filtroEstado, soloStockBajo]);
 
   const productosActivos = productos.filter(
     (p) => p.estado === "Activo",
@@ -229,13 +250,7 @@ export const PantallaGestionProductos = () => {
       );
       return;
     }
-
-    const nuevoProducto = {
-      ...productoForm,
-      id: Date.now(),
-    };
-
-    setProductos((prev) => [nuevoProducto, ...prev]);
+    setProductos((prev) => [{ ...productoForm, id: Date.now() }, ...prev]);
   };
 
   const handleGuardarStock = (productoActualizado) => {
@@ -257,31 +272,17 @@ export const PantallaGestionProductos = () => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => {
-                setProductoSeleccionado(null);
-                setOpenModalStock(true);
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground"
-            >
-              <Warehouse size={16} />
-              Ajustar stock
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setProductoSeleccionado(null);
-                setOpenModalProducto(true);
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
-            >
-              <Plus size={16} />
-              Nuevo producto
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setProductoSeleccionado(null);
+              setOpenModalProducto(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+          >
+            <Plus size={16} />
+            Nuevo producto
+          </button>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -325,34 +326,71 @@ export const PantallaGestionProductos = () => {
           </div>
         </div>
 
+        {stockBajo > 0 && (
+          <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300">
+            <span className="font-semibold">Alerta:</span> {stockBajo} productos
+            alcanzaron o cayeron por debajo del stock mínimo. Usa el botón{" "}
+            <span className="font-semibold">Stock</span> de cada fila para
+            registrar reposición o merma.
+          </div>
+        )}
+
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-xl font-semibold">Catálogo de productos</h2>
               <p className="text-sm text-muted-foreground">
                 Lista general de productos registrados
               </p>
             </div>
-
-            <div className="relative w-full md:max-w-sm">
-              <Search
-                size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <input
-                type="text"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar producto o categoría..."
-                className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-3 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
-              />
+            <div className="grid w-full gap-2 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-4">
+              <div className="relative sm:col-span-2">
+                <Search
+                  size={16}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <input
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Buscar producto..."
+                  className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-3 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <select
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+              >
+                {categorias.map((cat) => (
+                  <option key={cat}>{cat}</option>
+                ))}
+              </select>
+              <select
+                value={filtroEstado}
+                onChange={(e) => setFiltroEstado(e.target.value)}
+                className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+              >
+                <option>Todos</option>
+                <option>Activo</option>
+                <option>Inactivo</option>
+              </select>
             </div>
           </div>
+          <label className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={soloStockBajo}
+              onChange={(e) => setSoloStockBajo(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            Mostrar solo productos con stock bajo/crítico
+          </label>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
+            <table className="w-full min-w-[980px] text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
+                  <th className="px-3 py-3 text-left font-medium">ID</th>
                   <th className="px-3 py-3 text-left font-medium">Producto</th>
                   <th className="px-3 py-3 text-left font-medium">Categoría</th>
                   <th className="px-3 py-3 text-left font-medium">Precio</th>
@@ -365,7 +403,6 @@ export const PantallaGestionProductos = () => {
                   <th className="px-3 py-3 text-left font-medium">Acciones</th>
                 </tr>
               </thead>
-
               <tbody>
                 {productosFiltrados.map((producto) => {
                   const estadoStock = obtenerEstadoStock(
@@ -384,30 +421,31 @@ export const PantallaGestionProductos = () => {
                     producto.stock,
                     producto.stockMinimo,
                   );
-
                   return (
                     <tr
                       key={producto.id}
                       className="border-b border-border last:border-none"
                     >
+                      <td className="px-3 py-4 text-muted-foreground">
+                        #{producto.id}
+                      </td>
                       <td className="px-3 py-4 font-medium">
                         {producto.nombre}
                       </td>
-
                       <td className="px-3 py-4">
                         <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                           {producto.categoria}
                         </span>
                       </td>
-
                       <td className="px-3 py-4">
                         {formatearPrecio(producto.precio)}
                       </td>
-                      <td className="px-3 py-4 font-medium">
+                      <td
+                        className={`px-3 py-4 font-medium ${producto.stock <= producto.stockMinimo ? textoClase : ""}`}
+                      >
                         {producto.stock}
                       </td>
                       <td className="px-3 py-4">{producto.stockMinimo}</td>
-
                       <td className="px-3 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-2.5 w-24 overflow-hidden rounded-full bg-muted">
@@ -421,21 +459,15 @@ export const PantallaGestionProductos = () => {
                           </span>
                         </div>
                       </td>
-
                       <td className="px-3 py-4">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            producto.estado === "Activo"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted text-muted-foreground"
-                          }`}
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${producto.estado === "Activo" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
                         >
                           {producto.estado}
                         </span>
                       </td>
-
                       <td className="px-3 py-4">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={() => {
@@ -444,10 +476,8 @@ export const PantallaGestionProductos = () => {
                             }}
                             className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-accent hover:text-accent-foreground"
                           >
-                            <Pencil size={13} />
-                            Editar
+                            <Pencil size={13} /> Editar
                           </button>
-
                           <button
                             type="button"
                             onClick={() => {
@@ -457,6 +487,13 @@ export const PantallaGestionProductos = () => {
                             className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-accent hover:text-accent-foreground"
                           >
                             Stock
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate(ROUTES.HISTORIAL_STOCK)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <History size={13} /> Historial
                           </button>
                         </div>
                       </td>
@@ -478,15 +515,14 @@ export const PantallaGestionProductos = () => {
                 Últimos movimientos de inventario
               </p>
             </div>
-
             <button
               type="button"
+              onClick={() => navigate(ROUTES.HISTORIAL_STOCK)}
               className="text-sm font-medium text-primary underline underline-offset-4"
             >
               Ver completo
             </button>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
@@ -502,7 +538,6 @@ export const PantallaGestionProductos = () => {
                   <th className="px-3 py-3 text-left font-medium">Detalle</th>
                 </tr>
               </thead>
-
               <tbody>
                 {historial.map((movimiento) => (
                   <tr
@@ -521,11 +556,7 @@ export const PantallaGestionProductos = () => {
                       </span>
                     </td>
                     <td
-                      className={`px-3 py-4 font-medium ${
-                        movimiento.cantidad > 0
-                          ? "text-primary"
-                          : "text-destructive"
-                      }`}
+                      className={`px-3 py-4 font-medium ${movimiento.cantidad > 0 ? "text-primary" : "text-destructive"}`}
                     >
                       {movimiento.cantidad > 0
                         ? `+${movimiento.cantidad}`
@@ -547,7 +578,6 @@ export const PantallaGestionProductos = () => {
           producto={productoSeleccionado}
           onSave={handleGuardarProducto}
         />
-
         <ModalConsultarStock
           open={openModalStock}
           onClose={() => setOpenModalStock(false)}
