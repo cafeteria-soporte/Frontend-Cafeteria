@@ -1,10 +1,32 @@
-import { BaseService } from "@/api/base.service";
-import { ProductDto } from "../dto/product.dto";
+import { apiClient, normalizeApiList } from "@/api/apiClient";
 
-class ProductsService extends BaseService {
-  constructor() {
-    super("/products", ProductDto);
-  }
-}
+export const productsService = {
+  getAll: async () => {
+    const data = await apiClient("/products");
+    return normalizeApiList(data);
+  },
 
-export const productsService = new ProductsService();
+  getLowStock: async () => {
+    const data = await apiClient("/products/low-stock");
+    return normalizeApiList(data);
+  },
+
+  getById: (id) => apiClient(`/products/${id}`),
+
+  create: (data) =>
+    apiClient("/products", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id, data) =>
+    apiClient(`/products/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  remove: (id) =>
+    apiClient(`/products/${id}`, {
+      method: "DELETE",
+    }),
+};

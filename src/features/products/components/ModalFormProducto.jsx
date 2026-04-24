@@ -1,33 +1,42 @@
 import { useEffect, useState } from "react";
 
 const estadoInicial = {
+  categoryId: "",
   nombre: "",
-  categoria: "",
-  precio: "",
-  stock: "",
-  stockMinimo: "",
-  estado: "Activo",
   descripcion: "",
+  precio: "",
+  stockMinimo: "",
+  imageUrl: "",
+  estado: "Activo",
 };
 
-export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
+export const ModalFormProducto = ({
+  open,
+  onClose,
+  producto,
+  categorias = [],
+  onSave,
+}) => {
   const [form, setForm] = useState(estadoInicial);
 
   useEffect(() => {
+    if (!open) return;
     if (producto) {
       setForm({
-        nombre: producto.nombre || "",
-        categoria: producto.categoria || "",
-        precio: producto.precio ?? "",
-        stock: producto.stock ?? "",
-        stockMinimo: producto.stockMinimo ?? "",
-        estado: producto.estado || "Activo",
-        descripcion: producto.descripcion || "",
+        categoryId: producto.categoryId || producto.category?.id || "",
+        nombre: producto.nombre || producto.name || "",
+        descripcion: producto.descripcion || producto.description || "",
+        precio: producto.precio ?? producto.salePrice ?? "",
+        stockMinimo: producto.stockMinimo ?? producto.minStock ?? "",
+        imageUrl: producto.imageUrl || "",
+        estado:
+          producto.estado ||
+          (producto.active === false ? "Inactivo" : "Activo"),
       });
     } else {
-      setForm(estadoInicial);
+      setForm({ ...estadoInicial, categoryId: categorias[0]?.id || "" });
     }
-  }, [producto, open]);
+  }, [producto, open, categorias]);
 
   if (!open) return null;
 
@@ -38,16 +47,14 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const payload = {
+    onSave?.({
       ...producto,
       ...form,
+      categoryId: Number(form.categoryId),
       precio: Number(form.precio || 0),
-      stock: Number(form.stock || 0),
       stockMinimo: Number(form.stockMinimo || 0),
-    };
-
-    onSave(payload);
+      active: form.estado === "Activo",
+    });
     onClose();
   };
 
@@ -60,13 +67,13 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
               {producto ? "Editar producto" : "Nuevo producto"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Completa la información del producto.
+              Los campos se envían con la estructura esperada por la API.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent"
           >
             Cerrar
           </button>
@@ -74,10 +81,8 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Nombre
-              </label>
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">Nombre *</span>
               <input
                 required
                 name="nombre"
@@ -86,26 +91,28 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
                 placeholder="Ej. Café americano"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
-            </div>
+            </label>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Categoría
-              </label>
-              <input
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">Categoría *</span>
+              <select
                 required
-                name="categoria"
-                value={form.categoria}
+                name="categoryId"
+                value={form.categoryId}
                 onChange={handleChange}
-                placeholder="Ej. Bebidas"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
+              >
+                <option value="">Seleccionar categoría</option>
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
+                    {categoria.nombre || categoria.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Precio
-              </label>
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">Precio de venta *</span>
               <input
                 required
                 min="0"
@@ -117,28 +124,10 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
                 placeholder="0"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
-            </div>
+            </label>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Stock actual
-              </label>
-              <input
-                required
-                min="0"
-                type="number"
-                name="stock"
-                value={form.stock}
-                onChange={handleChange}
-                placeholder="0"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Stock mínimo
-              </label>
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">Stock mínimo *</span>
               <input
                 required
                 min="0"
@@ -149,12 +138,10 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
                 placeholder="0"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
-            </div>
+            </label>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Estado
-              </label>
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">Estado</span>
               <select
                 name="estado"
                 value={form.estado}
@@ -164,13 +151,22 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
               </select>
-            </div>
+            </label>
+
+            <label className="space-y-1.5">
+              <span className="text-sm font-medium">URL imagen</span>
+              <input
+                name="imageUrl"
+                value={form.imageUrl}
+                onChange={handleChange}
+                placeholder="https://..."
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Descripción
-            </label>
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">Descripción</span>
             <textarea
               rows="4"
               name="descripcion"
@@ -179,13 +175,13 @@ export const ModalFormProducto = ({ open, onClose, producto, onSave }) => {
               placeholder="Describe el producto..."
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
             />
-          </div>
+          </label>
 
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
             >
               Cancelar
             </button>

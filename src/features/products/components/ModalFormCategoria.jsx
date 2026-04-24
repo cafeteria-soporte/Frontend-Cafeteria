@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { X, Save } from "lucide-react";
+import { X } from "lucide-react";
 
-const estadoInicial = {
-  id: null,
-  nombre: "",
-  descripcion: "",
-  productosAsociados: 0,
-  estado: "Activa",
-};
+const estadoInicial = { id: null, nombre: "", estado: "Activa" };
 
 export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
   const [form, setForm] = useState(estadoInicial);
@@ -19,17 +13,13 @@ export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
 
   if (!open) return null;
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.nombre.trim()) return;
     onSave?.({
       ...form,
       nombre: form.nombre.trim(),
-      descripcion: form.descripcion.trim(),
-      productosAsociados: Number(form.productosAsociados || 0),
+      active: form.estado === "Activa",
     });
     onClose();
   };
@@ -43,7 +33,7 @@ export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
               {categoria ? "Editar categoría" : "Nueva categoría"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Organiza el catálogo para asociar productos correctamente.
+              La API de categorías recibe nombre y estado activo.
             </p>
           </div>
           <button
@@ -54,66 +44,49 @@ export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
             <X size={18} />
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block space-y-1">
             <span className="text-sm font-medium">Nombre de categoría *</span>
             <input
               name="nombre"
               value={form.nombre}
-              onChange={handleChange}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, nombre: e.target.value }))
+              }
               placeholder="Ej. Bebidas"
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
+
           <label className="block space-y-1">
-            <span className="text-sm font-medium">Descripción</span>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Ej. Bebidas calientes, frías e infusiones."
+            <span className="text-sm font-medium">Estado</span>
+            <select
+              name="estado"
+              value={form.estado}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, estado: e.target.value }))
+              }
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-            />
+            >
+              <option value="Activa">Activa</option>
+              <option value="Inactiva">Inactiva</option>
+            </select>
           </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-1">
-              <span className="text-sm font-medium">Productos asociados</span>
-              <input
-                name="productosAsociados"
-                type="number"
-                min="0"
-                value={form.productosAsociados}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm font-medium">Estado</span>
-              <select
-                name="estado"
-                value={form.estado}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
-              >
-                <option>Activa</option>
-                <option>Inactiva</option>
-              </select>
-            </label>
-          </div>
+
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              <Save size={16} /> Guardar
+              Guardar
             </button>
           </div>
         </form>

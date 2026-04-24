@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Filter, Search } from "lucide-react";
+import { stockMovementsService } from "../services/stockMovements.service";
+import { productsService } from "@/features/products/services/products.service";
 
-const movimientosBase = [
+const movimientosMock = [
   {
     id: 1,
     fecha: "2026-04-24 14:32",
@@ -9,132 +11,128 @@ const movimientosBase = [
     tipo: "Venta",
     cantidad: -1,
     stockResultante: 38,
-    usuario: "Imanani",
-    motivo: "Venta #1084",
+    usuario: "demo",
+    detalle: "Venta #1084",
   },
   {
     id: 2,
     fecha: "2026-04-24 10:20",
     producto: "Café molido",
-    tipo: "Merma",
+    tipo: "shrinkage",
     cantidad: -3,
     stockResultante: 2,
-    usuario: "Mantezana",
-    motivo: "Vencimiento",
-  },
-  {
-    id: 3,
-    fecha: "2026-04-24 09:00",
-    producto: "Leche entera",
-    tipo: "Ingreso",
-    cantidad: 10,
-    stockResultante: 15,
-    usuario: "Mantezana",
-    motivo: "Proveedor Lácteos SA",
-  },
-  {
-    id: 4,
-    fecha: "2026-04-24 08:30",
-    producto: "Croissant",
-    tipo: "Ajuste",
-    cantidad: -2,
-    stockResultante: 4,
-    usuario: "Mantezana",
-    motivo: "Corrección inventario",
-  },
-  {
-    id: 5,
-    fecha: "2026-04-23 17:10",
-    producto: "Brownie",
-    tipo: "Ingreso",
-    cantidad: 12,
-    stockResultante: 17,
-    usuario: "Mantezana",
-    motivo: "Reposición producción",
-  },
-  {
-    id: 6,
-    fecha: "2026-04-23 15:45",
-    producto: "Capuccino",
-    tipo: "Anulación",
-    cantidad: 1,
-    stockResultante: 31,
-    usuario: "Administrador",
-    motivo: "Anulación autorizada",
+    usuario: "demo",
+    detalle: "Vencimiento",
   },
 ];
 
-const claseTipo = (tipo) => {
-  if (tipo === "Ingreso") return "bg-primary/10 text-primary";
-  if (tipo === "Venta" || tipo === "Merma")
-    return "bg-destructive/10 text-destructive";
-  if (tipo === "Anulación")
-    return "bg-blue-500/10 text-blue-600 dark:text-blue-300";
-  return "bg-amber-500/10 text-amber-700 dark:text-amber-300";
-};
-
 export const HistorialMovimientosStock = () => {
-  const [busqueda, setBusqueda] = useState("");
+  const [movimientos, setMovimientos] = useState(movimientosMock);
+  const [productos, setProductos] = useState([]);
+  const [producto, setProducto] = useState("Todos");
   const [tipo, setTipo] = useState("Todos");
-  const [desde, setDesde] = useState("2026-04-23");
-  const [hasta, setHasta] = useState("2026-04-24");
+  const [busqueda, setBusqueda] = useState("");
+  const [error, setError] = useState("");
 
-  const movimientos = useMemo(() => {
-    return movimientosBase.filter((mov) => {
-      const coincideTexto = `${mov.producto} ${mov.usuario} ${mov.motivo}`
-        .toLowerCase()
-        .includes(busqueda.toLowerCase());
-      const coincideTipo = tipo === "Todos" || mov.tipo === tipo;
-      const fecha = mov.fecha.slice(0, 10);
-      const coincideFecha =
-        (!desde || fecha >= desde) && (!hasta || fecha <= hasta);
-      return coincideTexto && coincideTipo && coincideFecha;
-    });
-  }, [busqueda, tipo, desde, hasta]);
+  const cargar = async () => {
+    try {
+      setError("");
+      const [movs, prods] = await Promise.all([
+        stockMovementsService.getAll(),
+        productsService.getAll().catch(() => []),
+      ]);
+      setMovimientos(movs.length ? movs : movimientosMock);
+      setProductos(prods);
+    } catch (err) {
+      setError(
+        "No se pudo cargar historial desde API. Se muestran datos de prueba.",
+      );
+      setMovimientos(movimientosMock);
+    }
+  };
+
+  useEffect(() => {
+    cargar();
+  }, []);
+
+  const filtrados = useMemo(
+    () =>
+      movimientos.filter((m) => {
+        const texto = `${m.producto} ${m.tipo} ${m.detalle} ${m.usuario}`
+          .toLowerCase()
+          .includes(busqueda.toLowerCase());
+        const prodOk = producto === "Todos" || m.producto === producto;
+        const tipoOk =
+          tipo === "Todos" ||
+          String(m.tipo).toLowerCase().includes(tipo.toLowerCase());
+        return texto && prodOk && tipoOk;
+      }),
+    [movimientos, busqueda, producto, tipo],
+  );
 
   const exportarCSV = () => {
-    const encabezados =
-      "Fecha,Producto,Tipo,Cantidad,Stock resultante,Usuario,Motivo\n";
-    const filas = movimientos
-      .map(
-        (m) =>
-          `${m.fecha},${m.producto},${m.tipo},${m.cantidad},${m.stockResultante},${m.usuario},${m.motivo}`,
+    const rows = [
+      [
+        "Fecha",
+        "Producto",
+        "Tipo",
+        "Cantidad",
+        "Stock resultante",
+        "Usuario",
+        "Detalle",
+      ],
+      ...filtrados.map((m) => [
+        m.fecha,
+        m.producto,
+        m.tipo,
+        m.cantidad,
+        m.stockResultante,
+        m.usuario,
+        m.detalle,
+      ]),
+    ];
+    const csv = rows
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
       )
       .join("\n");
-    const blob = new Blob([encabezados + filas], {
-      type: "text/csv;charset=utf-8;",
-    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "historial_stock.csv";
-    a.click();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "historial-stock.csv";
+    link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Historial de Stock
+              Historial de movimientos de stock
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Consulta y exportación de movimientos de inventario.
+              Consulta de movimientos consumidos desde API.
             </p>
           </div>
           <button
-            type="button"
             onClick={exportarCSV}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
           >
             <Download size={16} /> Exportar CSV
           </button>
         </div>
-
+        {error && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            {error}
+          </div>
+        )}
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_160px_160px]">
+          <div className="mb-5 grid gap-3 md:grid-cols-[1fr_220px_220px]">
             <div className="relative">
               <Search
                 size={16}
@@ -144,96 +142,73 @@ export const HistorialMovimientosStock = () => {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar producto, usuario o motivo..."
-                className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-3 text-sm outline-none"
+                className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <select
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value)}
-              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+              value={producto}
+              onChange={(e) => setProducto(e.target.value)}
+              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
             >
               <option>Todos</option>
-              <option>Venta</option>
-              <option>Ingreso</option>
-              <option>Ajuste</option>
-              <option>Merma</option>
-              <option>Anulación</option>
+              {productos.map((p) => (
+                <option key={p.id}>{p.nombre}</option>
+              ))}
             </select>
-            <input
-              type="date"
-              value={desde}
-              onChange={(e) => setDesde(e.target.value)}
-              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
-            />
-            <input
-              type="date"
-              value={hasta}
-              onChange={(e) => setHasta(e.target.value)}
-              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
-            />
+            <select
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            >
+              <option>Todos</option>
+              <option>goods_receipt</option>
+              <option>manual_adjustment</option>
+              <option>shrinkage</option>
+              <option>sale</option>
+              <option>sale_void</option>
+            </select>
           </div>
-        </section>
-
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Filter size={16} /> {filtrados.length} registros
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
-                  <th className="px-3 py-3 text-left font-medium">
-                    Fecha/hora
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium">Producto</th>
-                  <th className="px-3 py-3 text-left font-medium">Tipo</th>
-                  <th className="px-3 py-3 text-left font-medium">Cantidad</th>
-                  <th className="px-3 py-3 text-left font-medium">
-                    Stock resultante
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium">Usuario</th>
-                  <th className="px-3 py-3 text-left font-medium">
-                    Motivo/Detalle
-                  </th>
+                  <th className="px-3 py-3 text-left">Fecha/hora</th>
+                  <th className="px-3 py-3 text-left">Producto</th>
+                  <th className="px-3 py-3 text-left">Tipo</th>
+                  <th className="px-3 py-3 text-left">Cantidad</th>
+                  <th className="px-3 py-3 text-left">Stock resultante</th>
+                  <th className="px-3 py-3 text-left">Usuario</th>
+                  <th className="px-3 py-3 text-left">Motivo/Detalle</th>
                 </tr>
               </thead>
               <tbody>
-                {movimientos.map((mov) => (
+                {filtrados.map((m) => (
                   <tr
-                    key={mov.id}
+                    key={m.id}
                     className="border-b border-border last:border-none"
                   >
-                    <td className="px-3 py-4 font-mono text-xs">{mov.fecha}</td>
-                    <td className="px-3 py-4 font-medium">{mov.producto}</td>
+                    <td className="px-3 py-4">{m.fecha || "—"}</td>
+                    <td className="px-3 py-4 font-medium">{m.producto}</td>
                     <td className="px-3 py-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${claseTipo(mov.tipo)}`}
-                      >
-                        {mov.tipo}
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        {m.tipo}
                       </span>
                     </td>
                     <td
-                      className={`px-3 py-4 font-semibold ${mov.cantidad >= 0 ? "text-primary" : "text-destructive"}`}
+                      className={`px-3 py-4 font-medium ${Number(m.cantidad) < 0 ? "text-destructive" : "text-primary"}`}
                     >
-                      {mov.cantidad >= 0 ? `+${mov.cantidad}` : mov.cantidad}
+                      {Number(m.cantidad) > 0 ? `+${m.cantidad}` : m.cantidad}
                     </td>
-                    <td className="px-3 py-4">{mov.stockResultante}</td>
-                    <td className="px-3 py-4">{mov.usuario}</td>
-                    <td className="px-3 py-4 text-muted-foreground">
-                      {mov.motivo}
-                    </td>
+                    <td className="px-3 py-4">{m.stockResultante}</td>
+                    <td className="px-3 py-4">{m.usuario}</td>
+                    <td className="px-3 py-4">{m.detalle}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{movimientos.length} registros</span>
-            <div className="flex gap-2">
-              <button className="rounded-xl border border-border px-3 py-2">
-                ← Anterior
-              </button>
-              <button className="rounded-xl border border-border px-3 py-2">
-                Siguiente →
-              </button>
-            </div>
           </div>
         </section>
       </div>

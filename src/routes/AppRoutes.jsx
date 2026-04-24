@@ -59,8 +59,8 @@ import { PantallaVentaIndividual } from "@/features/pos/pages/PantallaVentaIndiv
 // ════════════════════════════════════════════════════════
 //  NOTIFICACIONES  —  Andrea
 // ════════════════════════════════════════════════════════
-// (el panel vive dentro del layout, no tiene página propia separada por ahora)
 
+import { PantallaNotificaciones } from "@/features/notifications/components/pages/PantallaNotificaciones";
 // ════════════════════════════════════════════════════════
 //  RUTAS
 // ════════════════════════════════════════════════════════
@@ -165,7 +165,7 @@ const AppRoutes = () => {
           <Route path={ROUTES.LOGS_ADMIN} element={<div>Logs</div>} />
           <Route
             path={ROUTES.NOTIFICACIONES}
-            element={<div>Notificaciones</div>}
+            element={<PantallaNotificaciones />}
           />
 
           <Route
