@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Clock, User, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { OpenShiftModal } from "../components/ModalAperturaTurno"; // Ajusta la ruta si es necesario
-import { useShifts } from "../hooks/useShifts"; // Ajusta la ruta a tu hook
+import { OpenShiftModal } from "../components/ModalAperturaTurno"; 
+import { useShifts } from "../hooks/useShifts";
 import { ROUTES } from "@/utils/constants";
 
 export const PantallaPreTurno = () => {
@@ -13,11 +13,9 @@ export const PantallaPreTurno = () => {
   
   const { currentShift, openShift } = useShifts();
 
-  // Estado para guardar el nombre real del cajero
   const [cashierName, setCashierName] = useState("Cajero en turno");
 
   
-  // Leemos el localStorage correctamente al montar la pantalla
   useEffect(() => {
     const userDataString = localStorage.getItem("userData");
     if (userDataString) {
@@ -31,24 +29,20 @@ export const PantallaPreTurno = () => {
   }, []);
 
 useEffect(() => {
-    // Si el estado global dice que YA hay turno, ¡vete al POS!
     if (currentShift) {
       console.log("Detectado turno abierto, redirigiendo...");
       navigate(ROUTES.POS, { replace: true });
     }
   }, [currentShift, navigate]);
 
-  // Función que el modal llamará para hacer la petición real
   const handleApertura = async (monto) => {
     setIsOpening(true);
     try {
       await openShift(monto);
       setOpenModal(false);
-      // Al ser exitoso, lo mandamos a vender
       navigate(ROUTES.POS, { replace: true });
     // eslint-disable-next-line no-useless-catch
     } catch (error) {
-      // Lanzamos el error para que el modal lo ataje y lo muestre
       throw error;
     } finally {
       setIsOpening(false);

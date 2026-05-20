@@ -3,19 +3,16 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, Download, LogOut, FileText, AlertTriangle, Loader2 } from "lucide-react";
 import { Link, useLocation, Navigate } from "react-router-dom";
-// Usamos tu hook useShifts
 import { useShifts } from "../hooks/useShifts"; 
 import { ROUTES } from "@/utils/constants";
 
 export const PantallaResultadoCierreTurno = () => {
   const location = useLocation();
-  // Extraemos fetchMyShifts (que usa el endpoint /mine)
   const { fetchMyShifts } = useShifts();
 
   const [closedShift, setClosedShift] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ID que viene desde el modal
   const shiftId = location.state?.shiftId;
 
   useEffect(() => {
@@ -24,11 +21,9 @@ export const PantallaResultadoCierreTurno = () => {
     const cargarYFiltrar = async () => {
       try {
         setLoading(true);
-        // 1. Buscamos tus turnos (endpoint /mine). 
-        // Pedimos un límite generoso para asegurar que el reciente aparezca.
+     
         const misTurnos = await fetchMyShifts({ limit: 20 }); 
 
-        // 2. Buscamos en el array el turno que tenga el ID que buscamos
         const turnoEncontrado = misTurnos.find(t => t.id === shiftId);
 
         if (turnoEncontrado) {
@@ -46,7 +41,6 @@ export const PantallaResultadoCierreTurno = () => {
     cargarYFiltrar();
   }, [shiftId, fetchMyShifts]);
 
-  // Protección de ruta
   if (!shiftId) {
     return <Navigate to={ROUTES.PRE_TURNO || "/shifts/pre-shift"} replace />; 
   }

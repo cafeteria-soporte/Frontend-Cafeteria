@@ -31,7 +31,7 @@ export const ProcessPaymentModal = ({
   const [cardAmount, setCardAmount] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-const [processingStep, setProcessingStep] = useState(""); // NUEVO: Para el texto del simulador
+const [processingStep, setProcessingStep] = useState(""); 
   useEffect(() => {
     if (open && (!paymentMethods.data || paymentMethods.data.length === 0)) {
       paymentMethods.fetch();
@@ -57,7 +57,6 @@ const [processingStep, setProcessingStep] = useState(""); // NUEVO: Para el text
   };
 
 const handleConfirmPayment = async () => {
-    // 1. Validaciones iniciales de interfaz
     if (paymentMethod === "cash" && (parseFloat(cashReceived) || 0) < total) {
       toast.error("El monto recibido es menor al total");
       return;
@@ -98,10 +97,8 @@ const handleConfirmPayment = async () => {
         await new Promise((resolve) => setTimeout(resolve, 800));
       } 
       else {
-        // Para efectivo o mixto
         setProcessingStep("Registrando venta...");
       }
-      // 2. Obtener IDs de métodos de pago desde los datos de la BD
       const getMethodId = (keyword) => {
         const method = paymentMethods.data?.find((m) =>
           m.name.toLowerCase().includes(keyword.toLowerCase())
@@ -113,8 +110,7 @@ const handleConfirmPayment = async () => {
       const cardId = getMethodId("tarjeta") || 2;
       const transferId = getMethodId("transfer") || 3;
 
-      // 3. Preparar el array de pagos según lo que pide el servidor
-      // Cada objeto dentro del array lleva amount (lo que se cobra) y amountTendered (lo recibido)
+ 
       let paymentsArray = [];
 
       if (paymentMethod === "cash") {
@@ -161,14 +157,12 @@ const handleConfirmPayment = async () => {
 
       let orderId = order.id;
 
-      // 4. Si es una venta rápida (sin orden previa), la creamos primero
       if (!orderId) {
         const newOrder = await orders.create({ shiftRecordId: shiftId });
         orderId = newOrder?.data?.id || newOrder?.id;
 
         if (!orderId) throw new Error("No se pudo generar el ID de la orden");
 
-        // Subimos los productos al servidor
         await Promise.all(
           order.map((item) =>
             orders.items.add(orderId, {
@@ -179,18 +173,11 @@ const handleConfirmPayment = async () => {
         );
       }
 
-      // 5. LLAMADA FINAL AL SERVIDOR (Cerrar y Pagar)
-      // Enviamos el objeto con la propiedad 'payments' que contiene el array
-      // Esto resuelve el error: "payments must be an array"
-    // ... (arriba queda igual)
 
-      // 5. LLAMADA FINAL AL SERVIDOR (Cerrar y Pagar)
-      // ¡AQUÍ GUARDAMOS LA RESPUESTA EN UNA VARIABLE!
       const paymentResponse = await orders.pay(orderId, { 
         payments: paymentsArray 
       });
 
-      // 6. Éxito y Limpieza de estados
       toast.success("Venta completada exitosamente");
       
       setCashReceived("");
@@ -198,26 +185,21 @@ const handleConfirmPayment = async () => {
       setCardAmount("");
       setTransferAmount("");
 
-      // ¡AQUÍ LE PASAMOS LA RESPUESTA AL PADRE!
       if (onSuccess) {
-        // Extraemos los datos útiles de la respuesta (depende de cómo responda tu API)
-        // Por lo general viene en paymentResponse.data o directamente en paymentResponse
+
         const saleData = paymentResponse?.data || paymentResponse;
         onSuccess(saleData); 
       }
       
       if (onClose) onClose(); 
       
-      // Abrir recibo de forma segura
       if (onOpenReceipt && typeof onOpenReceipt === 'function') {
         onOpenReceipt(orderId);
       }
 
     } catch (error) {
       console.error("Error detallado en la venta:", error.response?.data || error);
-// ... (abajo queda igual)
       
-      // Extraer mensaje de error del servidor si existe
       const serverMessage = error.response?.data?.message;
       const finalMsg = Array.isArray(serverMessage) ? serverMessage[0] : serverMessage;
       
@@ -264,7 +246,6 @@ const handleConfirmPayment = async () => {
             </div>
           </div>
 
-          {/* Botones de Métodos (Igual a tu código) */}
           <div className="space-y-4">
              <div className="grid grid-cols-2 gap-3">
                 <button 
@@ -293,7 +274,6 @@ const handleConfirmPayment = async () => {
                 </button>
              </div>
 
-             {/* Inputs dinámicos */}
              <div className="mt-4">
                 {paymentMethod === "cash" && (
                   <div className="space-y-2">
@@ -328,7 +308,6 @@ const handleConfirmPayment = async () => {
           </div>
         </div>
 
-       {/* Footer */}
         <div className="border-t border-border px-6 py-4 flex gap-3">
           <button 
             onClick={onClose} 

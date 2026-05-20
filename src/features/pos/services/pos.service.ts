@@ -1,5 +1,4 @@
-// pos.service.ts
-import { BaseService, apiClient } from '../../../api/base.service'; // Ajusta la ruta a tu base.service
+import { BaseService, apiClient } from '../../../api/base.service';
 import { 
   PaymentMethod, CreatePaymentMethodDto, UpdatePaymentMethodDto,
   Order, CreateOrderDto, PayOrderDto, VoidOrderDto,
@@ -17,7 +16,6 @@ class OrderService extends BaseService<Order, CreateOrderDto, Partial<Order>> {
     super('/user-orders');
   }
 
-  // --- ACCIONES PRINCIPALES DE LA ORDEN ---
   async pay(id: number | string, data: PayOrderDto): Promise<Order> {
     const response = await apiClient.post<Order>(`${this.endpoint}/${id}/pay`, data);
     return response.data;
@@ -28,7 +26,6 @@ class OrderService extends BaseService<Order, CreateOrderDto, Partial<Order>> {
     return response.data;
   }
 
-  // --- ÍTEMS DE LA ORDEN ---
   async getItems(orderId: number | string): Promise<OrderItem[]> {
     const response = await apiClient.get<OrderItem[]>(`${this.endpoint}/${orderId}/items`);
     return response.data;
@@ -43,7 +40,6 @@ class OrderService extends BaseService<Order, CreateOrderDto, Partial<Order>> {
     await apiClient.delete(`${this.endpoint}/${orderId}/items/${productId}`);
   }
 
-  // --- PAGOS PARCIALES DE LA ORDEN ---
   async getPayments(orderId: number | string): Promise<OrderPayment[]> {
     const response = await apiClient.get<OrderPayment[]>(`${this.endpoint}/${orderId}/payments`);
     return response.data;

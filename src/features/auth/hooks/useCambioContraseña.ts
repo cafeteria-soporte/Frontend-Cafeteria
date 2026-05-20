@@ -31,7 +31,6 @@ export const useChangePassword = () => {
     try {
       await authService.changePassword(currentPassword, newPassword);
 
-      // Actualizamos el localStorage
       const userDataStr = localStorage.getItem('userData');
       if (userDataStr) {
         const userData = JSON.parse(userDataStr);
@@ -39,12 +38,10 @@ export const useChangePassword = () => {
         localStorage.setItem('userData', JSON.stringify(userData));
       }
 
-      // <-- Cambiamos el alert por un toast de éxito
       toast.success("¡Contraseña actualizada con éxito!", {
         description: "Tu nueva credencial ya está activa."
       });
 
-      // Redirección por roles
       const userRole = localStorage.getItem('userRole');
       if (userRole === 'root') {
         navigate(ROUTES.ROOT_DASHBOARD);
@@ -57,7 +54,6 @@ export const useChangePassword = () => {
       }
 
     } catch (err: any) {
-      // <-- También podemos usar toast para el error si lo prefieres, o dejar el state de error
       setError(err.message || "No se pudo actualizar la contraseña.");
       toast.error("Error al actualizar", {
         description: err.message || "Verifica tu contraseña actual."

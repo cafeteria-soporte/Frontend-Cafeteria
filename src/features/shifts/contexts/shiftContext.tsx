@@ -3,7 +3,6 @@ import { shiftsService } from "../services/shifts.service";
 import { ShiftRecord } from "../dtos/shift.dto";
 import { toast } from "sonner";
 
-// Definimos la estructura del contexto
 interface ShiftContextType {
   currentShift: ShiftRecord | null;
   loadingCurrent: boolean;
@@ -19,16 +18,13 @@ export const ShiftProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [loadingCurrent, setLoadingCurrent] = useState(true);
 
   const fetchCurrentShift = useCallback(async () => {
-    // 1. EL FRENO: Verificamos si hay token antes de hacer nada
     const token = localStorage.getItem('accessToken');
     
     if (!token) {
-      // Si no hay token (usuario no logueado), no llamamos a la API
       setCurrentShift(null);
       return null;
     }
 
-    // 2. Si hay token, procedemos normalmente
     setLoadingCurrent(true);
     try {
       const shift = await shiftsService.getCurrentShift();
@@ -45,7 +41,7 @@ export const ShiftProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const openShift = async (initialFund: number) => {
     try {
       const newShift = await shiftsService.openShift({ initialFund });
-      setCurrentShift(newShift); // Se actualiza para TODA la app al mismo tiempo
+      setCurrentShift(newShift); 
       toast.success('Turno abierto exitosamente. ¡Buena jornada!');
       return newShift;
     } catch (err: any) {
@@ -55,19 +51,17 @@ export const ShiftProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
  const closeShift = async (declaredAmount: number) => {
-  console.log('Intentando cerrar turno con monto declarado:', declaredAmount); // Debugging
+  console.log('Intentando cerrar turno con monto declarado:', declaredAmount); 
   try {
     const closedShift = await shiftsService.closeShift({ declaredAmount });
     console.log('Turno cerrado:', closedShift);
 
-    // Si hay discrepancia
     if (closedShift.discrepancyAlert) {
       toast.warning("Se encontró una discrepancia en el cierre. Revisa el resultado.");
     } else {
       toast.success('Turno cerrado correctamente y cuadrado.');
     }
 
-    // Limpiar estado global
     setCurrentShift(null);
 
     return closedShift;

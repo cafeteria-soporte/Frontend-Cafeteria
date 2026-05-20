@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, Search, Save, AlertTriangle } from "lucide-react";
-import { Product } from "@/features/products/dto/product.dto"; // Ajusta la ruta según tu proyecto
+import { Product } from "@/features/products/dto/product.dto"; 
 import React from "react";
 
-// Mantenemos la lógica de estado intacta
+
 const obtenerEstadoStock = (stockActual: number, stockMinimo: number) => {
   if (stockActual <= 0 || stockActual < 3) return "Crítico";
   if (stockActual <= stockMinimo) return "Bajo";
@@ -16,8 +16,6 @@ const obtenerClaseEstado = (estado: string) => {
   return "bg-primary/10 text-primary";
 };
 
-// Ampliamos los tipos con 'any' temporalmente para que TypeScript no bloquee 
-// al recibir las propiedades en español (si tu DTO las tiene en inglés)
 interface ModalConsultarStockProps {
   open: boolean;
   onClose: () => void;
@@ -47,7 +45,6 @@ export const ModalConsultarStock = ({
     }
   }, [open, producto]);
 
-  // Usamos 'stock' en lugar de 'currentStock'
   const stockAntes = Number(producto?.stock ?? 0);
   const cantidadNumerica = Number(cantidad || 0);
 
@@ -60,7 +57,6 @@ export const ModalConsultarStock = ({
 
   const stockDespues = Math.max(0, stockAntes + movimientoCalculado);
 
-  // Filtramos usando 'nombre', 'categoria' y 'stock'
   const productosFiltrados = productos.filter((item) => {
     const estado = obtenerEstadoStock(item.stock, item.stockMinimo);
     return `${item.nombre} ${item.categoria || ""} ${estado}`
@@ -82,7 +78,7 @@ export const ModalConsultarStock = ({
       return 2; // Ajuste manual
     };
 
-    const quantityToSend = tipoMovimiento === "A Ajuste manual" // Aseguramos que la lógica de tu string coincida (Ajuste manual)
+    const quantityToSend = tipoMovimiento === "A Ajuste manual" 
       ? movimientoCalculado
       : tipoMovimiento === "Merma"
         ? -Math.abs(cantidadNumerica)
@@ -102,7 +98,6 @@ export const ModalConsultarStock = ({
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold">
-              {/* Leemos producto.nombre */}
               {producto ? `Stock de ${producto.nombre}` : "Consulta de stock"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -123,10 +118,8 @@ export const ModalConsultarStock = ({
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-2xl border border-border bg-background p-4">
                 <p className="text-xs text-muted-foreground">Producto</p>
-                {/* Leemos producto.nombre */}
                 <p className="mt-1 font-semibold">{producto.nombre}</p>
                 <p className="text-xs text-muted-foreground">
-                  {/* Leemos producto.categoria */}
                   {producto.categoria || "Sin categoría"}
                 </p>
               </div>
@@ -143,7 +136,6 @@ export const ModalConsultarStock = ({
               </div>
             </div>
 
-            {/* Validamos con producto.stockMinimo */}
             {stockAntes <= producto.stockMinimo && (
               <div className="flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300">
                 <AlertTriangle size={18} className="mt-0.5" />
@@ -257,11 +249,9 @@ export const ModalConsultarStock = ({
                 </thead>
                 <tbody>
                   {productosFiltrados.map((item) => {
-                    // Usamos item.stock y item.stockMinimo
                     const estado = obtenerEstadoStock(item.stock, item.stockMinimo);
                     return (
                       <tr key={item.id} className="border-b border-border last:border-none">
-                        {/* Leemos item.nombre, item.categoria e item.stock */}
                         <td className="px-3 py-3 font-medium">{item.nombre}</td>
                         <td className="px-3 py-3">{item.categoria || "N/A"}</td>
                         <td className="px-3 py-3">{item.stock}</td>

@@ -1,4 +1,3 @@
-// category.types.ts
 export interface Category {
   id: number;
   name: string;
@@ -12,7 +11,6 @@ export interface CreateCategoryDto {
 
 export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 
-// NUEVO: Interfaz para los parámetros de búsqueda y paginación
 export interface CategoryQueryParams {
   page?: number;
   limit?: number;

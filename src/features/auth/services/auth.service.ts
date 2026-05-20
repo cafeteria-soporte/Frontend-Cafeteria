@@ -44,8 +44,7 @@ export const authService = {
       const url = `${API_URL}/auth/change-password`;
       const body = { currentPassword, newPassword };
 
-      console.log("DEBUG: URL de la petición:", url);
-      console.log("DEBUG: Body enviado:", { currentPassword: "***", newPassword: "***" }); // No logueamos claves por seguridad
+    
 
       const response = await axios.patch(
         url,

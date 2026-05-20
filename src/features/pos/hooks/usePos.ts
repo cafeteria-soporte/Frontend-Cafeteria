@@ -1,4 +1,3 @@
-// usePos.ts
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CrudService, useCrud } from '@/hooks/useCrud';
@@ -16,18 +15,15 @@ const paymentMethodsCrud = useCrud<PaymentMethod, CreatePaymentMethodDto, Update
     paymentMethodService as unknown as CrudService<PaymentMethod, CreatePaymentMethodDto, UpdatePaymentMethodDto>
   );
 
-  // Forzamos a TypeScript a aceptar orderService
   const ordersCrud = useCrud<Order, CreateOrderDto, Partial<Order>>(
     orderService as unknown as CrudService<Order, CreateOrderDto, Partial<Order>>
   );
 
   const [actionLoading, setActionLoading] = useState(false);
   
-  // Opcional: Estados locales para mantener en memoria los items y pagos de la orden activa
   const [activeOrderItems, setActiveOrderItems] = useState<OrderItem[]>([]);
   const [activeOrderPayments, setActiveOrderPayments] = useState<OrderPayment[]>([]);
 
-  // --- MÉTODOS DE LA ORDEN (PAY / VOID) ---
   const payOrder = async (id: number | string, data: PayOrderDto) => {
     setActionLoading(true);
     try {
@@ -58,7 +54,6 @@ const paymentMethodsCrud = useCrud<PaymentMethod, CreatePaymentMethodDto, Update
     }
   };
 
-  // --- MÉTODOS PARA ÍTEMS ---
   const fetchOrderItems = async (orderId: number | string) => {
     try {
       const items = await orderService.getItems(orderId);
@@ -89,7 +84,6 @@ const paymentMethodsCrud = useCrud<PaymentMethod, CreatePaymentMethodDto, Update
     setActionLoading(true);
     try {
       await orderService.removeItem(orderId, productId);
-      // Recargamos los items tras borrar
       await fetchOrderItems(orderId);
       toast.success('Producto removido');
     } catch (error) {
@@ -100,7 +94,6 @@ const paymentMethodsCrud = useCrud<PaymentMethod, CreatePaymentMethodDto, Update
     }
   };
 
-  // --- MÉTODOS PARA PAGOS ---
   const fetchOrderPayments = async (orderId: number | string) => {
     try {
       const payments = await orderService.getPayments(orderId);

@@ -14,8 +14,7 @@ export const PantallaGestionCategorias = () => {
     updateCategory 
   } = useCategories();
 
-  // 1. Desestructuramos products (y asumimos que el hook tiene una función para traerlos, ej. getAllProducts)
-  // Le damos un valor por defecto [] para evitar errores si aún no carga
+ 
   const { products = [], getAllProducts } = useProducts(); 
 
   const [busqueda, setBusqueda] = useState("");
@@ -39,11 +38,8 @@ export const PantallaGestionCategorias = () => {
 
   useEffect(() => {
     getAllCategories({ limit: 100, page: 1 });
-    
-    // 2. Llamamos a la función que trae los productos para que "products" se llene.
-    // (Ajusta el nombre de getAllProducts si tu hook lo llama diferente, ej: fetchProducts)
+
     if (getAllProducts) {
-      // Traemos un límite alto para asegurarnos de tener todos y poder contarlos
       getAllProducts({ limit: 1000, page: 1 }); 
     }
   }, [getAllCategories, getAllProducts]);
@@ -54,7 +50,6 @@ const categoriasFiltradas = useMemo(() => {
       id: cat.id,
       nombre: cat.name,
       estado: cat.active ? "Activa" : "Inactiva",
-      // CAMBIO AQUÍ: Accedemos a p.category.id
       productosAsociados: products.filter(
         (p) => Number(p.category?.id) === Number(cat.id)
       ).length,
@@ -266,7 +261,6 @@ const categoriasFiltradas = useMemo(() => {
   );
 };
 
-// Componente Card sin cambios
 const Card = ({ icon, title, value, subtitle, warn }) => (
   <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
     <div className="mb-3 flex items-center gap-3">

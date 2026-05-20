@@ -1,4 +1,3 @@
-// shift.types.ts
 
 import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal } from "react";
 
@@ -15,22 +14,19 @@ export interface ShiftRecord {
   closedAt: string | null;
 }
 
-// DTO para Abrir Caja
 export interface OpenShiftDto {
   initialFund: number;
 }
 
-// DTO para Cerrar Caja (Cierre ciego)
 export interface CloseShiftDto {
   declaredAmount: number;
 }
 
-// Parámetros de búsqueda para el GET (Filtros)
 export interface ShiftQueryParams {
   page?: number;
   limit?: number;
   cashierId?: number;
   status?: "open" | "closed";
-  from?: string; // Fecha inicio ISO 8601
-  to?: string;   // Fecha fin ISO 8601
+  from?: string; 
+  to?: string;   
 }

@@ -8,21 +8,18 @@ import { useShifts } from "../hooks/useShifts";
 import { toast } from "sonner";
 import { ROUTES } from "@/utils/constants";
 
-// 1. IMPORTANTE: Importamos el servicio directamente para hacer el cierre "silencioso"
 import { shiftsService } from "../services/shifts.service"; 
 
 export const CloseShiftModal = ({ open, onClose, totals, pendingCount = 0 }) => {
   const [actualCash, setActualCash] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // 2. IMPORTANTE: Solo sacamos 'currentShift' (para el ID) y 'fetchCurrentShift' (para actualizar al final)
   const { currentShift, fetchCurrentShift } = useShifts();
   const navigate = useNavigate();
 
   if (!open) return null;
 
   const handleFinalizarTurno = async () => {
-    // --- BLOQUEO DE ÓRDENES PENDIENTES ---
     if (pendingCount > 0) {
       toast.error("Cierre no permitido", {
         description: `Tienes ${pendingCount} órdenes pendientes. Debes cobrarlas o anularlas antes de cerrar el turno.`,
@@ -30,7 +27,7 @@ export const CloseShiftModal = ({ open, onClose, totals, pendingCount = 0 }) => 
       });
       return; 
     }
-    // -------------------------------------
+    
 
     const declaredAmount = parseFloat(actualCash);
 
@@ -39,7 +36,6 @@ export const CloseShiftModal = ({ open, onClose, totals, pendingCount = 0 }) => 
       return;
     }
 
-    // 3. CAPTURAMOS EL ID DEL TURNO ANTES DE HACER NADA
     const idDelTurnoCerrado = currentShift?.id;
     console.log("ID del turno que se va a cerrar:", idDelTurnoCerrado); 
 
@@ -50,24 +46,19 @@ export const CloseShiftModal = ({ open, onClose, totals, pendingCount = 0 }) => 
 
     setIsSubmitting(true);
     try {
-      // 4. EL TRUCO MAESTRO: Llamamos al servicio directo para mandar los datos al back.
-      // Así el backend cierra la caja, pero tu ShiftGuard no se entera y no destruye la pantalla.
-      // NOTA: Revisa que le pases { declaredAmount } como objeto si tu backend lo pide así.
+     
       await shiftsService.closeShift({ declaredAmount }); 
       
       console.log("Cierre enviado al backend con éxito."); 
       
-      // Cerramos el modal visualmente
       onClose();
       
-      // 5. Navegamos a salvo a la pantalla de resultados pasando nuestro ID
       navigate(ROUTES.RESULTADO_CIERRE, { 
         state: { shiftId: idDelTurnoCerrado },
         replace: true 
       });
 
-      // 6. Finalmente, ya que estamos en la otra pantalla, actualizamos el contexto 
-      // para que el sistema global sepa que ya no hay turno activo.
+      
       fetchCurrentShift();
 
     } catch (error) {
@@ -94,7 +85,6 @@ export const CloseShiftModal = ({ open, onClose, totals, pendingCount = 0 }) => 
         </div>
 
         <div className="space-y-4 py-4">
-          {/* Alerta visual si hay pendientes */}
           {pendingCount > 0 && (
             <div className="flex gap-3 rounded-lg bg-destructive/10 p-3 border border-destructive/20 text-destructive">
               <AlertTriangle className="h-5 w-5 shrink-0" />

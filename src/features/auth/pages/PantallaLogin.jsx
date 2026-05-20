@@ -12,7 +12,6 @@ export const PantallaLogin = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
 
-      {/* Decorative blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-[0.06]"
           style={{ background: "var(--primary)" }} />
@@ -22,9 +21,7 @@ export const PantallaLogin = () => {
 
       <div className="relative w-full max-w-[420px] animate-slide-up">
 
-        {/* ── Header ── */}
         <div className="rounded-t-2xl overflow-hidden" style={{ background: "var(--navbar)" }}>
-          {/* Acento superior */}
           <div className="h-[3px] w-full" style={{
             background: "linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 50%, transparent))",
           }} />
@@ -50,7 +47,6 @@ export const PantallaLogin = () => {
           
             </div>
 
-            {/* Indicador en línea */}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
               style={{ background: "color-mix(in srgb, var(--primary) 18%, transparent)" }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--primary)" }} />
@@ -59,7 +55,6 @@ export const PantallaLogin = () => {
           </div>
         </div>
 
-        {/* ── Form ── */}
         <div className="rounded-b-2xl px-7 py-8 border border-t-0"
           style={{ background: "var(--card)", borderColor: "var(--border)" }}>
 
@@ -93,7 +88,6 @@ export const PantallaLogin = () => {
                 Usuario
               </label>
               <div className="relative">
-                {/* Ícono posicionado a una distancia segura */}
                 <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                   style={{
                     color: focusedField === "username" ? "var(--primary)" : "var(--muted-foreground)",
@@ -105,7 +99,7 @@ export const PantallaLogin = () => {
                   placeholder="nombre.apellido"
                   className="input transition-all duration-200"
                   style={{
-                    paddingLeft: "40px", /* Forzamos el padding para evitar superposición */
+                    paddingLeft: "40px",
                     borderColor: focusedField === "username" ? "var(--primary)" : "var(--border)",
                     boxShadow: focusedField === "username"
                       ? "0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent)" : "none",
@@ -128,7 +122,6 @@ export const PantallaLogin = () => {
 
               </div>
               <div className="relative">
-                {/* Ícono posicionado a una distancia segura */}
                 <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                   style={{
                     color: focusedField === "password" ? "var(--primary)" : "var(--muted-foreground)",
@@ -140,7 +133,7 @@ export const PantallaLogin = () => {
                   placeholder="••••••••••"
                   className="input pr-10 transition-all duration-200"
                   style={{
-                    paddingLeft: "40px", /* Forzamos el padding para evitar superposición */
+                    paddingLeft: "40px", 
                     borderColor: focusedField === "password" ? "var(--primary)" : "var(--border)",
                     boxShadow: focusedField === "password"
                       ? "0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent)" : "none",

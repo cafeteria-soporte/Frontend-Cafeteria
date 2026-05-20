@@ -17,8 +17,8 @@ export const ModalDetalleVenta = ({ open, onClose, saleId }) => {
         setIsLoading(true);
         try {
           const [saleData, itemsData] = await Promise.all([
-            orders.getById(saleId),         // GET /api/cafeteria/user-orders/{id}
-            orders.items.fetch(saleId)      // GET /api/cafeteria/user-orders/{id}/items
+            orders.getById(saleId),      
+            orders.items.fetch(saleId)     
           ]);
 
           setSale(saleData);
@@ -109,14 +109,12 @@ export const ModalDetalleVenta = ({ open, onClose, saleId }) => {
                 </div>
               </div>
 
-              {/* Si está anulada, mostrar motivo */}
               {sale.status === 'voided' && sale.voidReason && (
                 <div className="bg-destructive/10 text-destructive p-3 rounded-lg border border-destructive/20 text-sm">
                   <strong>Motivo de anulación:</strong> {sale.voidReason}
                 </div>
               )}
 
-              {/* Productos */}
               <div>
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">Productos</h3>
                 <div className="border border-border/50 rounded-xl overflow-hidden">
@@ -156,7 +154,6 @@ export const ModalDetalleVenta = ({ open, onClose, saleId }) => {
                 </div>
               </div>
 
-              {/* Totales */}
               <div className="flex justify-end pt-4 border-t-2 border-dashed border-border/60">
                 <div className="text-right">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Pagado</p>
@@ -169,7 +166,6 @@ export const ModalDetalleVenta = ({ open, onClose, saleId }) => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-5 border-t border-border/50 bg-muted/10 flex gap-3">
           <button 
             className="flex-1 button button-outline border-border/50 bg-card hover:bg-muted disabled:opacity-50"

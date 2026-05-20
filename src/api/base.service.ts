@@ -1,5 +1,4 @@
 import axios from 'axios';
-// AÑADIDO: Asegúrate de que la ruta de importación coincida con donde tienes tu useCrud
 import { CrudService } from '@/hooks/useCrud'; 
 
 export const apiClient = axios.create({
@@ -7,18 +6,14 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// En base.service.ts (o base.service.js)
 apiClient.interceptors.request.use(
   (config) => {
-    // 1. Cambiamos 'token' por 'accessToken' para que coincida con tu Login
     const token = localStorage.getItem('accessToken'); 
-    console.log('Token obtenido para la solicitud:', token); // Debugging
+    console.log('Token obtenido para la solicitud:', token); 
     
-    // 2. Verificamos que sea un token válido antes de enviarlo
     if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      // Si no hay sesión, nos aseguramos de no enviar basura
       delete config.headers.Authorization;
     }
     
@@ -27,7 +22,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// AÑADIDO: "implements CrudService<T, CreateDto, UpdateDto>" para que TypeScript valide el contrato
 export class BaseService<T, CreateDto = Partial<T>, UpdateDto = Partial<T>> implements CrudService<T, CreateDto, UpdateDto> {
   protected endpoint: string;
 
@@ -35,7 +29,6 @@ export class BaseService<T, CreateDto = Partial<T>, UpdateDto = Partial<T>> impl
     this.endpoint = endpoint;
   }
 
-  // Cambiamos el retorno a 'any' o una estructura genérica para soportar la paginación
   async getAll(params: Record<string, any> = {}): Promise<any> {
     console.log('Parámetros para getAll:', params); // Debugging
     const response = await apiClient.get(this.endpoint, { params });

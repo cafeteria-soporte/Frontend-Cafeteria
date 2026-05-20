@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useShifts } from "@/features/shifts/hooks/useShifts"; // Ajusta la ruta a tu hook
+import { useShifts } from "@/features/shifts/hooks/useShifts";
 import { ROUTES } from "@/utils/constants";
 
 export const ShiftGuard = () => {
@@ -12,7 +12,6 @@ export const ShiftGuard = () => {
     fetchCurrentShift();
   }, [fetchCurrentShift]);
 
-  // 1. Mostrar loader centrado mientras el backend responde
   if (loadingCurrent) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
@@ -24,11 +23,9 @@ export const ShiftGuard = () => {
     );
   }
 
-  // 2. Si NO hay turno, lo pateamos a la pantalla de Pre-Turno (Apertura)
   if (!currentShift) {
     return <Navigate to={ROUTES.PRE_TURNO} state={{ from: location }} replace />;
   }
 
-  // 3. Si hay turno, lo dejamos pasar a vender
   return <Outlet />;
 };

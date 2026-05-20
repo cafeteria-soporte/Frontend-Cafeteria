@@ -37,7 +37,6 @@ export const PantallaAjusteStock = () => {
     }
   }, [productosMapeados, productoId]);
 
-  // Lógica de cálculos de stock
   const productoSeleccionado = productosMapeados.find((item) => Number(item.id) === Number(productoId)) || productosMapeados[0];
   const stockAntes = Number(productoSeleccionado?.stock || 0);
   const cantidadNumerica = Number(cantidad || 0);
@@ -45,22 +44,20 @@ export const PantallaAjusteStock = () => {
   const movimiento = useMemo(() => {
     if (tipo === "Ingreso") return cantidadNumerica;
     if (tipo === "Merma") return -cantidadNumerica;
-    return cantidadNumerica - stockAntes; // Para "Ajuste", la cantidad ingresada es el nuevo total
+    return cantidadNumerica - stockAntes; 
   }, [tipo, cantidadNumerica, stockAntes]);
 
   const stockDespues = Math.max(0, stockAntes + movimiento);
   const mermaInvalida = tipo === "Merma" && cantidadNumerica > stockAntes;
 
-  // Mapear el tipo de UI a los IDs exactos del backend (según el Swagger)
   const getMovementTypeId = (tipoUI) => {
-    if (tipoUI === "Ingreso") return 1; // goods_receipt
-    if (tipoUI === "Merma") return 3;   // shrinkage
-    return 2;                           // manual_adjustment
+    if (tipoUI === "Ingreso") return 1; 
+    if (tipoUI === "Merma") return 3;   
+    return 2;                         
   };
 
   const movementTypeId = getMovementTypeId(tipo);
   
-  // Calcular la cantidad a enviar al backend (+ o -)
   const quantity = tipo === "Ajuste"
     ? movimiento
     : tipo === "Merma"
@@ -72,7 +69,6 @@ export const PantallaAjusteStock = () => {
     if (mermaInvalida || !productoSeleccionado || !cantidadNumerica) return;
     
     try {
-      // Usamos nuestro hook para crear el movimiento
       await createMovement({
         productId: Number(productoSeleccionado.id),
         movementTypeId: movementTypeId,
@@ -84,12 +80,10 @@ export const PantallaAjusteStock = () => {
 
       toast.success("¡Movimiento registrado correctamente!");
       
-      // Limpiamos formulario
       setCantidad("");
       setMotivo("");
       setProveedor("");
       
-      // Volvemos a pedir los productos para que se actualice el stock visualmente
       await getAllProducts({ limit: 100, active: true });
       
     } catch (err) {

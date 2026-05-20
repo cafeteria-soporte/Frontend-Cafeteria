@@ -53,7 +53,6 @@ export const PantallaVentasTurnoActual = () => {
     fetchSales();
   }, [currentShift]);
 
-  // 2. Lógica de búsqueda y filtrado
   const filteredSales = useMemo(() => {
     return allOrders.filter(sale => 
       sale.id.toString().includes(searchTerm) || 
@@ -155,18 +154,16 @@ export const PantallaVentasTurnoActual = () => {
         </div>
       </main>
 
-      {/* Modal de Anulación */}
       <RequestCancellationModal 
         open={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         saleId={selectedSaleId}
         onSuccess={() => {
-            fetchSales(); // Refresca la lista después de anular
+            fetchSales(); 
             setIsModalOpen(false);
         }}
       />
 
-      {/* NUEVO: Modal de Detalle */}
       <ModalDetalleVenta 
         open={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}

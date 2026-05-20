@@ -1,13 +1,11 @@
-// useShifts.ts
 import { useState, useCallback } from 'react';
 import { useCrud } from '@/hooks/useCrud';
 import { shiftsService } from '../services/shifts.service';
 import { ShiftRecord, ShiftQueryParams } from '../dtos/shift.dto';
-import { useShiftContext } from '../contexts/shiftContext'; // <-- Importamos el contexto
+import { useShiftContext } from '../contexts/shiftContext'; 
 import { toast } from 'sonner';
 
 export const useShifts = () => {
-  // 1. Obtenemos el estado centralizado y sincronizado desde el Contexto
   const { 
     currentShift, 
     loadingCurrent, 
@@ -16,7 +14,6 @@ export const useShifts = () => {
     closeShift 
   } = useShiftContext();
 
-  // 2. Funciones administrativas heredadas del CRUD base (Se quedan locales)
   const { 
     data: allShifts, 
     loading: loadingAllShifts, 
@@ -24,7 +21,6 @@ export const useShifts = () => {
     getById: getShiftById
   } = useCrud<ShiftRecord, any, any>(shiftsService);
 
-  // 3. Historial personal del cajero (Se queda local porque no afecta rutas)
   const [myShifts, setMyShifts] = useState<ShiftRecord[]>([]);
   const [loadingMyShifts, setLoadingMyShifts] = useState(false);
 
@@ -44,22 +40,19 @@ export const useShifts = () => {
   }, []);
 
   return {
-    // Administrativo
     allShifts,
     loadingAllShifts,
     getAllShifts,
     getShiftById,
     
-    // Cajero - Estados
     currentShift,
     loadingCurrent,
     myShifts,
     loadingMyShifts,
     
-    // Cajero - Acciones
     fetchCurrentShift,
     fetchMyShifts,
-    openShift,  // Viene del contexto
-    closeShift  // Viene del contexto
+    openShift,  
+    closeShift  
   };
 };

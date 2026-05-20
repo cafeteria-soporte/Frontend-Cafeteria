@@ -13,7 +13,7 @@ export const PantallaNotificaciones = () => {
   
   const [alertas, setAlertas] = useState([]);
   const [error, setError] = useState("");
-  const [filtroActivo, setFiltroActivo] = useState("todas"); // todas | inventario | caja
+  const [filtroActivo, setFiltroActivo] = useState("todas"); 
 
   useEffect(() => {
     const cargarTodo = async () => {
@@ -30,7 +30,7 @@ export const PantallaNotificaciones = () => {
     cargarTodo();
   }, [getLowStockProducts, getAllShifts]);
 
-  // Lógica de unificación (Mapeo de Alertas)
+
   useEffect(() => {
     const rawProducts = Array.isArray(lowStockProducts) ? lowStockProducts : (lowStockProducts?.data || []);
     const alertasStock = rawProducts.map(p => ({
@@ -86,10 +86,8 @@ export const PantallaNotificaciones = () => {
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         
-        {/* HEADER MEJORADO */}
         <div className="bg-gradient-to-br from-card via-card to-primary/5 p-8 rounded-3xl border border-border shadow-lg">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Título y descripción */}
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-primary/10 rounded-2xl">
@@ -106,7 +104,6 @@ export const PantallaNotificaciones = () => {
               </div>
             </div>
 
-            {/* Estadísticas */}
             <div className="flex flex-wrap gap-3">
               <div className="bg-card border border-border rounded-2xl px-6 py-4 shadow-sm hover-lift">
                 <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">
@@ -124,7 +121,6 @@ export const PantallaNotificaciones = () => {
           </div>
         </div>
 
-        {/* FILTROS Y ACCIONES */}
         <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Filtros */}
@@ -164,7 +160,6 @@ export const PantallaNotificaciones = () => {
               </div>
             </div>
 
-            {/* Acción rápida */}
             {pendientes > 0 && (
               <button
                 onClick={marcarTodasLeidas}
@@ -177,14 +172,12 @@ export const PantallaNotificaciones = () => {
           </div>
         </div>
 
-        {/* MENSAJE DE ERROR */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 text-destructive text-sm">
             {error}
           </div>
         )}
 
-        {/* LISTADO DE ALERTAS */}
         <div className="space-y-3">
           {isLoading && alertas.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 gap-4">
@@ -208,7 +201,6 @@ export const PantallaNotificaciones = () => {
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Barra lateral de color */}
                 <div className={`absolute left-0 top-0 h-full w-1.5 ${
                   alerta.tipo === "Caja" 
                     ? "bg-gradient-to-b from-green-500 to-green-600" 
@@ -232,7 +224,6 @@ export const PantallaNotificaciones = () => {
                     )}
                   </div>
 
-                  {/* Contenido */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`inline-flex items-center text-[11px] font-black uppercase px-3 py-1 rounded-lg border ${
@@ -261,7 +252,6 @@ export const PantallaNotificaciones = () => {
                     </p>
                   </div>
 
-                  {/* Acciones */}
                   <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link
                       to={alerta.ruta}

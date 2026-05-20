@@ -55,7 +55,6 @@ export const PantallaGestionCajeros = () => {
     }
   };
 
-  // Métricas para las cards
   const totalCajeros = (cashiers || []).length;
   const cajeroActivos = (cashiers || []).filter((c) => c.active).length;
   const cajeroInactivos = (cashiers || []).filter((c) => !c.active).length;

@@ -10,12 +10,11 @@ export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
   useEffect(() => {
     if (!open) return;
     
-    // Si recibimos una categoría para editar, mapeamos sus datos al formulario
     if (categoria) {
       setForm({
         id: categoria.id,
-        nombre: categoria.nombre, // Usamos 'nombre' porque ya lo mapeamos en la tabla
-        estado: categoria.estado, // Usamos 'estado' ("Activa" / "Inactiva")
+        nombre: categoria.nombre, 
+        estado: categoria.estado,
       });
     } else {
       setForm(estadoInicial);
@@ -28,11 +27,11 @@ export const ModalFormCategoria = ({ open, onClose, categoria, onSave }) => {
     e.preventDefault();
     if (!form.nombre.trim()) return;
     
-    // Devolvemos el objeto preparado para nuestra función handleSave
+   
     onSave?.({
       id: form.id,
       nombre: form.nombre.trim(),
-      active: form.estado === "Activa", // Convertimos el string a boolean para la API
+      active: form.estado === "Activa", 
     });
   };
 

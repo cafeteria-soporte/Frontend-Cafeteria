@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 
-// En tu archivo donde está useCrud (ej. useCrud.ts)
 
 export interface CrudService<T, CreateDto, UpdateDto> {
   getAll(params?: Record<string, any>): Promise<any>; // <-- CAMBIA T[] por any
@@ -23,14 +22,11 @@ const getAll = useCallback(async (params = {}) => {
     try {
       const result = await serviceInstance.getAll(params);
       
-      // LA MAGIA ESTÁ AQUÍ: 
-      // Si result es un arreglo, lo usamos tal cual. 
-      // Si es un objeto (paginado), buscamos la propiedad donde vienen los datos (usualmente .data o .items)
       const dataArray = Array.isArray(result) 
         ? result 
         : (result.data || result.items || []);
         
-      setData(dataArray); // Ahora sí, guardamos un arreglo real
+      setData(dataArray); 
       return result;
     } catch (err) {
       toast.error('Error al obtener los datos');
@@ -40,17 +36,17 @@ const getAll = useCallback(async (params = {}) => {
     }
   }, [serviceInstance]);
   const create = async (newData: CreateDto) => {
-    console.log('Datos para crear:', newData); // Debugging
+    console.log('Datos para crear:', newData); 
     setLoading(true);
     try {
       const result = await serviceInstance.create(newData);
       setData((prev) => [...prev, result]);
       toast.success('Creado exitosamente');
-      console.log('Resultado de la creación:', result); // Debugging
+      console.log('Resultado de la creación:', result); 
       return result;
     } catch (err: any) {
       toast.error('Error al crear');
-      console.error('Error al crear:', err); // Debugging
+      console.error('Error al crear:', err); 
       throw err;
     } finally {
       setLoading(false);

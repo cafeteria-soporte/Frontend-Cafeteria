@@ -8,26 +8,22 @@ export const ModalStock = ({ open, onClose, productos = [] }) => {
 
   if (!open) return null;
 
-  // Filtrado de productos basado en el término de búsqueda
   const filteredProducts = productos.filter((p) =>
     (p.name || p.nombre || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      {/* Overlay oscuro */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal Content */}
       <div 
         className="relative flex flex-col w-full max-w-2xl max-h-[85vh] rounded-3xl border border-border/50 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         style={{ backgroundColor: "var(--card)" }} // Usa el color oscuro de tu tema
       >
         
-        {/* Header */}
         <div className="flex items-start justify-between p-6 pb-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -45,7 +41,6 @@ export const ModalStock = ({ open, onClose, productos = [] }) => {
           </button>
         </div>
 
-        {/* Search Bar */}
         <div className="px-6 pb-4">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -59,14 +54,12 @@ export const ModalStock = ({ open, onClose, productos = [] }) => {
           </div>
         </div>
 
-        {/* Table Header */}
         <div className="px-6 py-3 border-y border-border/40 bg-muted/10 grid grid-cols-4 gap-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           <div className="col-span-2">Producto</div>
           <div className="text-right pr-4">Stock disponible</div>
           <div className="text-center">Estado</div>
         </div>
 
-        {/* List Content */}
         <div className="flex-1 overflow-y-auto min-h-[200px] px-2">
           {filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
@@ -76,12 +69,10 @@ export const ModalStock = ({ open, onClose, productos = [] }) => {
           ) : (
             <div className="flex flex-col">
               {filteredProducts.map((producto, index) => {
-                // Adaptamos las variables por si el backend las manda diferente
                 const nombre = producto.name || producto.nombre || "Sin nombre";
                 const categoria = producto.category?.name || "Sin categoría";
                 const stock = producto.currentStock ?? producto.stock ?? 0;
                 
-                // Determinamos el estado visual
                 const isLowStock = stock <= (producto.minStock || 3);
                 const isOutOfStock = stock <= 0;
 
@@ -117,7 +108,6 @@ export const ModalStock = ({ open, onClose, productos = [] }) => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-6 pt-4 border-t border-border/40 flex justify-end">
           <button
             onClick={onClose}

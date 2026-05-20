@@ -5,10 +5,8 @@ import {
   Bell, Save, ChevronRight, CheckCircle2,
   AlertCircle, ToggleLeft, ToggleRight, Loader2
 } from 'lucide-react';
-// Asegúrate de importar el hook desde la ruta correcta
 import { useConfig } from '@/features/global-settings/useConfig'; 
 
-// ── Sub-componentes ────────────────────────────────────────────
 
 const SectionHeader = ({ icon: Icon, title, description }) => (
   <div className="flex items-center gap-3 mb-5">
@@ -77,42 +75,33 @@ const Toggle = ({ enabled, onChange, label, disabled }) => (
   </div>
 );
 
-// ── Pantalla principal ─────────────────────────────────────────
 
 export const PantallaConfiguracionGlobal = () => {
-  // Extraemos las funciones y estados de nuestro custom hook
   const { settings, loadingSettings, fetchSettings, saveAllSettings, isSavingBulk } = useConfig();
 
-  // Parámetros operativos (valores iniciales por defecto)
   const [umbralDescuadre, setUmbralDescuadre] = useState(50);
   const [tiempoSesion, setTiempoSesion] = useState(30);
   const [intentosFallidos, setIntentosFallidos] = useState(3);
 
-  // Numeración
   const [prefijo, setPrefijo] = useState('UCB-');
   const [siguienteNumero, setSiguienteNumero] = useState(1001);
 
-  // Notificaciones - Alineadas con el backend
   const [emailAlertas, setEmailAlertas] = useState('admin@ucb.edu.bo');
   const [notifInventory, setNotifInventory] = useState(true);
   const [notifShifts, setNotifShifts] = useState(true);
   const [notifUsers, setNotifUsers] = useState(false);
   const [notifPos, setNotifPos] = useState(true);
 
-  // Estado guardado
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
-  // 1. Cargar las configuraciones al montar el componente
   useEffect(() => {
-    fetchSettings({ limit: 50 }); // Pedimos un límite alto para traer todos los keys
+    fetchSettings({ limit: 50 }); 
   }, [fetchSettings]);
 
-  // 2. Mapear los datos de la base de datos a los estados de React
   useEffect(() => {
     if (settings && settings.length > 0) {
       settings.forEach((setting) => {
-        // En base de datos todo se suele guardar como string, lo parseamos si es necesario
         const val = setting.value;
         const isTrue = val === 'true' || val === true;
 
@@ -142,22 +131,17 @@ export const PantallaConfiguracionGlobal = () => {
       return;
     }
 
-    // 1. Objeto vacío donde solo guardaremos lo que cambió
     const payloadModificado = {};
 
-    // 2. Función ayudante para comparar el estado actual con la base de datos
     const checkAndAdd = (key, currentValue) => {
-      // Buscamos el valor original en los settings que descargamos
       const originalSetting = settings.find(s => s.key === key);
       const stringValue = String(currentValue);
 
-      // Si existe y el valor es diferente al que tenemos en pantalla, lo agregamos al payload
       if (originalSetting && originalSetting.value !== stringValue) {
         payloadModificado[key] = stringValue;
       }
     };
 
-    // 3. Comparamos cada campo
     checkAndAdd('cash_discrepancy_threshold', umbralDescuadre);
     checkAndAdd('session_timeout_minutes', tiempoSesion);
     checkAndAdd('max_login_attempts', intentosFallidos);
@@ -169,12 +153,10 @@ export const PantallaConfiguracionGlobal = () => {
     checkAndAdd('notify_users', notifUsers);
     checkAndAdd('notify_pos', notifPos);
 
-    // 4. Verificamos si realmente hubo cambios
     const keysToUpdate = Object.keys(payloadModificado);
     
     if (keysToUpdate.length === 0) {
-      // Si el objeto está vacío, significa que el usuario no cambió nada
-      // Mostramos el éxito sin hacer llamadas al backend
+      
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
       return;
@@ -182,12 +164,10 @@ export const PantallaConfiguracionGlobal = () => {
 
     console.log(`Enviando solo ${keysToUpdate.length} peticiones PATCH:`, payloadModificado);
 
-    // 5. Enviamos solo los datos que cambiaron
     const success = await saveAllSettings(payloadModificado);
 
     if (success) {
       setSaved(true);
-      // Volvemos a pedir los settings para que React tenga la versión más fresca
       fetchSettings({ limit: 50 });
       setTimeout(() => setSaved(false), 3000);
     }

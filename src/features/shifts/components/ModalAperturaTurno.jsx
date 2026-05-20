@@ -24,10 +24,8 @@ export const OpenShiftModal = ({
 
     setError("");
     try {
-      // Esperamos a que el componente padre (PantallaPreTurno) haga el trabajo
       await onConfirm(fund);
     } catch (err) {
-      // Atrapamos el error de la API y lo mostramos
       setError(err.response?.data?.message || "Ocurrió un error al abrir el turno");
     }
   };
@@ -45,9 +43,7 @@ export const OpenShiftModal = ({
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
-          {/* Información del turno */}
           <div className="space-y-3 rounded-xl border border-border bg-background p-4">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Cajero:</span>
@@ -70,7 +66,6 @@ export const OpenShiftModal = ({
             </div>
           </div>
 
-          {/* Campo fondo inicial */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Fondo de caja inicial <span className="text-destructive">*</span>
@@ -102,7 +97,6 @@ export const OpenShiftModal = ({
             )}
           </div>
 
-          {/* Nota importante */}
           <div className="flex gap-3 rounded-xl bg-primary/10 p-4">
             <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-primary" />
             <p className="text-xs text-foreground">
@@ -111,7 +105,6 @@ export const OpenShiftModal = ({
             </p>
           </div>
 
-          {/* Botones */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"

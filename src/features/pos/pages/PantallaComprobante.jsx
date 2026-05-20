@@ -3,7 +3,6 @@
 import { Printer, ChevronLeft, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 export const PantallaComprobante = ({ params }) => {
-  // Mock de datos
   const sale = {
     id: params.id || "001-2405",
     date: "21/04/2026 14:20",

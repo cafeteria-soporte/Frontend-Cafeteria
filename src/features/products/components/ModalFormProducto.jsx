@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
-import { uploadToCloudinary } from "@/api/claudinary.service"; // Ajusta la ruta si es necesario
+import { uploadToCloudinary } from "@/api/claudinary.service"; 
 import { Loader2 } from "lucide-react";
 
 const estadoInicial = {
@@ -27,7 +27,7 @@ export const ModalFormProducto = ({
   useEffect(() => {
     if (!open) return;
     if (producto) {
-      // CORRECCIÓN: Usamos producto.nombre o producto.name de forma segura
+
       setForm({
         categoryId: producto.categoryId || producto.category?.id || "",
         nombre: producto.nombre || producto.name || "",
@@ -66,8 +66,7 @@ export const ModalFormProducto = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // CORRECCIÓN: Aquí es donde hacemos la "traducción" final para la API
-    // asegurándonos de que 'description' tome el valor de 'form.descripcion'
+
     onSave?.({
       id: producto?.id,
       categoryId: Number(form.categoryId),
@@ -127,10 +126,9 @@ export const ModalFormProducto = ({
               >
                 <option value="">Seleccionar categoría</option>
                 {categorias
-                  // 1. FILTRAMOS AQUÍ: 
-                  // Mostrar si está activa, O si es la categoría actual del producto que estamos editando
+                  
                   .filter((categoria) => categoria.active || String(categoria.id) === String(form.categoryId))
-                  // 2. LUEGO DIBUJAMOS:
+                
                   .map((categoria) => (
                     <option key={categoria.id} value={categoria.id}>
                       {categoria.nombre || categoria.name}

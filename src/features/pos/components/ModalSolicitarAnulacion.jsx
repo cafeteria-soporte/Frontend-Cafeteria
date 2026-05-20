@@ -13,23 +13,19 @@ export const RequestCancellationModal = ({ open, onClose, saleId, onSuccess }) =
   if (!open) return null;
 
   const handleSubmit = async () => {
-    // 1. Validar que haya un motivo
     if (!reason.trim()) {
       return toast.error("Debes ingresar un motivo para la anulación");
     }
 
     setIsSubmitting(true);
     try {
-      // 2. Llamada a la API
-      // Nota: Verifica si en tu usePos la función se llama 'void', 'cancel' o 'remove'
-      // Basado en estandares de POS, suele ser orders.void(id, data)
+ 
       await orders.void(saleId, { reason: reason.trim() });
 
       toast.success(`Venta #${saleId} anulada correctamente`);
       
-      // 3. Limpiar y cerrar
       setReason("");
-      if (onSuccess) onSuccess(); // Esto refresca la lista en la pantalla de atrás
+      if (onSuccess) onSuccess(); 
       onClose();
     } catch (error) {
       console.error("Error al anular venta:", error);

@@ -1,12 +1,8 @@
-/* eslint-disable no-undef */
 import { useEffect, useMemo, useState } from "react";
 import { Download, Filter, Search, Loader2 } from "lucide-react";
 import { useStock } from "../hooks/useStock";
 import { useProducts } from "@/features/products/hooks/useProducts";
-// IMPORTANTE: Importa tu servicio/hook de usuarios aquí cuando lo tengas
-// import { useUsers } from "../hooks/useUsers"; 
 
-// 1. DICCIONARIO DE TRADUCCIÓN
 const TRADUCCION_TIPOS = {
   "goods_receipt": "Ingreso",
   "manual_adjustment": "Ajuste manual",
@@ -19,9 +15,7 @@ export const HistorialMovimientosStock = () => {
   const { movements, loadingMovements, getAllMovements } = useStock();
   const { products, loadingProducts, getAllProducts } = useProducts();
   
-  // Si tienes un hook de usuarios, lo usarías así:
-  // const { users, getAllUsers } = useUsers();
-  // Por ahora, simulamos una lista de usuarios vacía para que no rompa
+ 
   const users = []; 
 
   const [productoFiltro, setProductoFiltro] = useState("Todos");
@@ -32,22 +26,15 @@ export const HistorialMovimientosStock = () => {
   useEffect(() => {
     getAllMovements({ limit: 100 });
     getAllProducts({ limit: 100 });
-    // Si tuvieras el hook de usuarios, aquí llamarías:
-    // getAllUsers({ limit: 100 });
+   
   }, [getAllMovements, getAllProducts]);
 
-  // 2. MAPEO: Traducción de tipos y cruce de datos
   const movimientosMapeados = useMemo(() => {
     return movements.map((m) => {
       // Cruzar Producto
       const prod = products.find((p) => Number(p.id) === Number(m.productId));
       
-      // Cruzar Usuario (Busca el ID en la lista de usuarios para sacar el nombre)
-      
-      // Si el backend te enviara el objeto anidado "m.user.name", lo usaríamos. 
-      // Como solo envía "m.userId", usamos el cruce que hicimos arriba.
-
-      // Formatear Fecha
+ 
       const fechaObj = new Date(m.createdAt);
       const fechaFormateada = !isNaN(fechaObj.getTime())
         ? fechaObj.toLocaleString("es-BO", {
@@ -59,7 +46,6 @@ export const HistorialMovimientosStock = () => {
           })
         : m.createdAt;
 
-      // Traducir el Tipo
       const tipoOriginal = m.movementType?.name;
       const tipoTraducido = TRADUCCION_TIPOS[tipoOriginal] || tipoOriginal || "Desconocido";
 
@@ -67,16 +53,15 @@ export const HistorialMovimientosStock = () => {
         id: m.id,
         fecha: fechaFormateada,
         producto: prod?.name || `Producto ID: ${m.productId}`,
-        tipo: tipoTraducido, // Aquí va ya en Español
+        tipo: tipoTraducido, 
         cantidad: m.quantity,
         stockResultante: m.stockAfter,
-        usuario: m.user.fullName, // Aquí va el nombre real
+        usuario: m.user.fullName,
         detalle: m.reason || "Sin detalle",
       };
     });
   }, [movements, products, users]);
 
-  // Filtros locales
   const filtrados = useMemo(() => {
     return movimientosMapeados.filter((m) => {
       const texto = `${m.producto} ${m.tipo} ${m.detalle} ${m.usuario}`

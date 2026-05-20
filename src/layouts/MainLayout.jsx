@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
@@ -13,12 +14,8 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// ══════════════════════════════════════════════════════
-//  LINKS POR ROL
-// ══════════════════════════════════════════════════════
 const SIDEBAR_LINKS = {
 
-  // ── ROOT ──────────────────────────────────────────
   root: [
     { title: "Dashboard",           icon: LayoutDashboard, path: ROUTES.ROOT_DASHBOARD },
     { title: "Administradores",     icon: Users,           path: ROUTES.ROOT_ADMINISTRADORES },
@@ -27,7 +24,6 @@ const SIDEBAR_LINKS = {
     { title: "Backups",             icon: Database,        path: ROUTES.ROOT_BACKUPS },
   ],
 
-  // ── ADMINISTRADOR ─────────────────────────────────
   admin: [
     { title: "Dashboard",           icon: LayoutDashboard, path: ROUTES.DASHBOARD },
     { title: "Cajeros",             icon: Users,           path: ROUTES.CAJEROS },
@@ -40,29 +36,24 @@ const SIDEBAR_LINKS = {
     { title: "Notificaciones",      icon: Bell,            path: ROUTES.NOTIFICACIONES },
   ],
 
-  // ── CAJERO ────────────────────────────────────────
   cajero: [
     { title: "Punto de Venta",      icon: ShoppingCart,    path: ROUTES.POS },
     { title: "Ventas del turno",    icon: ListOrdered,     path: ROUTES.VENTAS_TURNO },
   ],
 };
 
-// Links comunes al pie del sidebar (todos los roles)
 const SIDEBAR_BOTTOM_LINKS = [
   { title: "Mi perfil",         icon: UserCircle, path: ROUTES.PERFIL },
   { title: "Cambiar contraseña",icon: KeyRound,   path: ROUTES.CAMBIO_CONTRASENA },
 ];
 
-// Etiquetas visuales por rol
 const ROL_META = {
   root:   { label: "Superusuario", initials: "SU", badge: "Root" },
   admin:  { label: "Administrador", initials: "AD", badge: "Admin" },
   cajero: { label: "Cajero",        initials: "CJ", badge: "Cajero" },
 };
 
-// ══════════════════════════════════════════════════════
-//  COMPONENTE SIDEBAR (reutilizable Desktop/Mobile)
-// ══════════════════════════════════════════════════════
+// eslint-disable-next-line no-unused-vars
 const SidebarContent = ({ rol, links, rolMeta, nombreUsuario, onLinkClick }) => {
   return (
     <div className="w-full flex flex-col h-full overflow-hidden">
@@ -168,9 +159,6 @@ const SidebarContent = ({ rol, links, rolMeta, nombreUsuario, onLinkClick }) => 
   );
 };
 
-// ══════════════════════════════════════════════════════
-//  COMPONENTE PRINCIPAL
-// ══════════════════════════════════════════════════════
 export const MainLayout = ({ rol = "admin" }) => {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
@@ -191,7 +179,6 @@ export const MainLayout = ({ rol = "admin" }) => {
   const links    = SIDEBAR_LINKS[rol] ?? SIDEBAR_LINKS.admin;
   const rolMeta  = ROL_META[rol]      ?? ROL_META.admin;
 
-  // Título de la sección actual
   const allLinks = [...links, ...SIDEBAR_BOTTOM_LINKS];
   const currentTitle =
     allLinks.find((l) => location.pathname.startsWith(l.path))?.title ?? "Inicio";
@@ -200,12 +187,10 @@ export const MainLayout = ({ rol = "admin" }) => {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   }).replace(/,/g, "");
 
-  // Cerrar sidebar móvil al cambiar de ruta
   useEffect(() => {
     setIsMobileSidebarOpen(false);
   }, [location.pathname]);
 
-  // Prevenir scroll cuando el menú móvil está abierto
   useEffect(() => {
     if (isMobileSidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -220,9 +205,7 @@ export const MainLayout = ({ rol = "admin" }) => {
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
 
-      {/* ══════════════════════════════════════════════
-          SIDEBAR DESKTOP
-      ══════════════════════════════════════════════ */}
+     
       <aside
         className={`
           ${isSidebarOpen ? "w-64" : "w-0 border-r-0"}
@@ -241,18 +224,15 @@ export const MainLayout = ({ rol = "admin" }) => {
         </div>
       </aside>
 
-      {/* ══════════════════════════════════════════════
-          SIDEBAR MÓVIL (Overlay)
-      ══════════════════════════════════════════════ */}
+    
       {isMobileSidebarOpen && (
         <>
-          {/* Overlay oscuro */}
+         
           <div 
             className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fade-in"
             onClick={() => setIsMobileSidebarOpen(false)}
           />
           
-          {/* Sidebar deslizable */}
           <aside className="fixed inset-y-0 left-0 w-64 bg-sidebar text-sidebar-foreground z-50 md:hidden shadow-2xl animate-slide-right">
             <div className="relative h-full">
               {/* Botón cerrar */}
@@ -275,16 +255,14 @@ export const MainLayout = ({ rol = "admin" }) => {
         </>
       )}
 
-      {/* ══════════════════════════════════════════════
-          MAIN CONTENT
-      ══════════════════════════════════════════════ */}
+
       <main className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
 
-        {/* NAVBAR */}
+    
         <header className="h-14 sm:h-16 px-3 sm:px-6 flex items-center justify-between bg-sidebar border-b border-white/5 z-10 shadow-md shrink-0">
 
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            {/* Toggle sidebar DESKTOP */}
+        
             <Button
               variant="ghost"
               size="icon"
@@ -297,7 +275,7 @@ export const MainLayout = ({ rol = "admin" }) => {
               />
             </Button>
 
-            {/* Menú hamburguesa MÓVIL */}
+   
             <Button
               variant="ghost"
               size="icon"
@@ -307,14 +285,12 @@ export const MainLayout = ({ rol = "admin" }) => {
               <Menu size={20} />
             </Button>
 
-            {/* Título de la página */}
             <h2 className="text-sm sm:text-base font-semibold tracking-tight text-white truncate">
               {currentTitle}
             </h2>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            {/* Fecha y hora - oculto en móvil */}
             <span className="text-xs font-medium text-sidebar-foreground/50 hidden lg:block">
               {today} · {new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
             </span>
@@ -323,7 +299,6 @@ export const MainLayout = ({ rol = "admin" }) => {
 
             <div className="flex items-center gap-1">
 
-              {/* Tema */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -333,7 +308,6 @@ export const MainLayout = ({ rol = "admin" }) => {
                 {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </Button>
 
-              {/* Notificaciones — solo root y admin */}
               {rol !== "cajero" && (
                 <NavLink to={ROUTES.NOTIFICACIONES}>
                   <Button
@@ -347,7 +321,6 @@ export const MainLayout = ({ rol = "admin" }) => {
                 </NavLink>
               )}
 
-              {/* Logout */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -366,7 +339,6 @@ export const MainLayout = ({ rol = "admin" }) => {
           </div>
         </header>
 
-        {/* ÁREA DE PÁGINAS */}
         <div className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
           <Outlet />
         </div>

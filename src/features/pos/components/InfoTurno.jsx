@@ -59,15 +59,12 @@ export const ShiftInfo = () => {
     }
   }, []);   
 
-  // Prevenimos error si por alguna razón renderiza sin turno
   if (!currentShift) return null;
 
-  // Formateamos la fecha y hora reales del backend
   const startTime = new Date(currentShift.openedAt).toLocaleTimeString('es-BO', {
     hour: '2-digit', minute: '2-digit'
   });
   
-  // Por ahora mostramos el fondo inicial. Si luego la API te devuelve las ventas totales del turno, lo cambias aquí.
   const currentSalesDisplay = Number(currentShift.initialFund); 
 
 
@@ -75,7 +72,6 @@ export const ShiftInfo = () => {
   return (
     <Card className="flex h-full flex-col border-none rounded-none bg-card shadow-none overflow-hidden">
       
-      {/* HEADER COMPACTO Y FIJO */}
       <CardHeader className="px-5 py-5 border-b border-border/40 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -98,11 +94,9 @@ export const ShiftInfo = () => {
         </div>
       </CardHeader>
 
-      {/* ÁREA DE SCROLL */}
       <div className="flex-1 overflow-y-auto px-5 pt-5 pb-6 bg-muted/10"> 
         <div className="space-y-6">
           
-          {/* TARJETA DE INGRESOS / FONDO */}
           <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-4 transition-all hover:border-primary/40">
             <div className="flex flex-col gap-1 relative z-10">
               <div className="flex items-center gap-2 mb-1">
@@ -120,7 +114,6 @@ export const ShiftInfo = () => {
             </div>
           </div>
 
-          {/* DETALLES DE OPERACIÓN */}
           <div className="space-y-2.5">
             <h3 className="text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1">
               Detalles de Operación
@@ -150,7 +143,6 @@ export const ShiftInfo = () => {
             </div>
           </div>
 
-          {/* HERRAMIENTAS */}
           <div className="space-y-2.5">
             <h3 className="text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1">
               Herramientas
@@ -188,7 +180,6 @@ export const ShiftInfo = () => {
         </div>
       </div>
 
-      {/* FOOTER */}
       <CardFooter className="flex-col gap-3 p-5 border-t border-border/40 bg-card flex-shrink-0">
         <Button
           onClick={() => setCloseShiftModalOpen(true)}
@@ -211,7 +202,6 @@ export const ShiftInfo = () => {
         </Button>
       </CardFooter>
 
-      {/* MODALES ACTUALIZADOS */}
       <ModalStock
         open={stockModalOpen}
         onClose={() => setStockModalOpen(false)}

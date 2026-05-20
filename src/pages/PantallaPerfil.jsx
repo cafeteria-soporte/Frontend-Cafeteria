@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Shield, Save, KeyRound, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useProfile } from '../features/auth/hooks/useProfile';
 
-// Componente de campo de contraseña reutilizable
 const PasswordField = ({ label, value, onChange, placeholder, focused, onFocus, onBlur, fieldKey }) => {
   const [show, setShow] = useState(false);
   return (

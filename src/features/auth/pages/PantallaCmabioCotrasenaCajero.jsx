@@ -25,7 +25,7 @@ const PasswordField = ({ label, value, onChange, placeholder, focused, onFocus, 
           required
           className="input pr-10 transition-all duration-200"
           style={{
-            paddingLeft: "40px", /* Forzamos el padding para evitar superposición con el ícono */
+            paddingLeft: "40px", 
             borderColor: focused === fieldKey ? "var(--primary)" : "var(--border)",
             boxShadow: focused === fieldKey ? "0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent)" : "none",
           }}

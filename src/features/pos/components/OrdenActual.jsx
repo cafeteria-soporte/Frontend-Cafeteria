@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-// Añadimos ClipboardList para el icono de registro
 import { Trash2, Minus, Plus, ShoppingCart, Receipt, X, ClipboardList } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,15 +15,13 @@ export const CurrentOrder = ({
   onRemoveItem,
   onClearOrder,
   onCheckout,
-  onRegisterOrder, // <-- Nueva prop para registrar sin cobrar
+  onRegisterOrder, 
 }) => {
   const totalItems = order.reduce((sum, item) => sum + item.cantidad, 0);
 
   return (
-    /* Contenedor principal: Ocupa el 100% del alto del panel lateral */
     <Card className="flex h-full flex-col border-none rounded-none bg-card shadow-none overflow-hidden">
       
-      {/* HEADER COMPACTO */}
       <CardHeader className="px-5 py-5 border-b border-border/40 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -52,7 +49,6 @@ export const CurrentOrder = ({
         </div>
       </CardHeader>
 
-      {/* ÁREA DE PRODUCTOS (SCROLL) */}
       <div className="flex-1 min-h-0 overflow-hidden bg-muted/10"> 
         <ScrollArea className="h-full w-full px-5">
           <div className="py-4 space-y-2.5">
@@ -135,7 +131,6 @@ export const CurrentOrder = ({
         </ScrollArea>
       </div>
 
-      {/* FOOTER COBRO ACTUALIZADO */}
       <CardFooter className="flex-col gap-4 p-5 border-t border-border/40 bg-card flex-shrink-0">
         <div className="w-full space-y-3">
           <div className="flex justify-between items-center text-xs font-bold text-muted-foreground px-1">
@@ -163,7 +158,6 @@ export const CurrentOrder = ({
           </div>
         </div>
 
-        {/* CONTENEDOR DE BOTONES DUALES */}
         <div className="grid grid-cols-2 gap-3 w-full">
           <Button 
             variant="outline"

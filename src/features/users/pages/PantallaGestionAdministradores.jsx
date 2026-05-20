@@ -3,7 +3,6 @@ import { Search, Plus, Loader2, Edit2, Power, PowerOff } from "lucide-react";
 import { useUserCrud } from "../hooks/useUserCrud";
 import { ModalFormularioAdmin } from "../components/ModalFormularioAdmin";
 import { toast } from "sonner";
-// IMPORTANTE: Asegúrate de importar el userService para poder llamar a deactivateUser
 import { userService } from "../services/user.service"; 
 
 export const PantallaGestionAdministradores = () => {
@@ -36,12 +35,10 @@ export const PantallaGestionAdministradores = () => {
     }
   };
 
-  // CORRECCIÓN DEL ERROR 404:
-  // Usamos el endpoint específico en lugar del 'update' genérico
+  
 const handleToggleStatus = async (admin) => {
     try {
       if (admin.active) {
-        // CORRECCIÓN AQUÍ: Usamos deactivate() en lugar de deactivateUser()
         await userService.deactivate(admin.id);
         toast.success(`Administrador ${admin.username} desactivado.`);
       } else {
@@ -53,7 +50,6 @@ const handleToggleStatus = async (admin) => {
       toast.error("No se pudo cambiar el estado del administrador.");
     }
   };
-  // Métricas para las cards
   const totalAdmins = (admins || []).length;
   const adminsActivos = (admins || []).filter((a) => a.active).length;
   const adminsInactivos = (admins || []).filter((a) => !a.active).length;

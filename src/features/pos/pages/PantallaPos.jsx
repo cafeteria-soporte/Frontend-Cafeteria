@@ -40,13 +40,11 @@ export const PantallaPos = () => {
       cajero: saleResponse?.cashier?.fullName || currentShift?.cashier?.fullName 
     });
 
-    // Limpiamos el POS para el siguiente cliente
     setOrder([]);
     setPaymentModalOpen(false);
 
-    // Abrimos el comprobante para imprimir
     setReceiptModalOpen(true);
-    fetchPendingOrders(); // Refrescamos los pendientes para que desaparezca la orden recién pagada
+    fetchPendingOrders(); 
   };
   const fetchPendingOrders = async () => {
   try {
@@ -288,7 +286,6 @@ console.log("Renderizando PantallaPos con turno:", formattedProducts);
         order={order}
         total={total}
         shiftId={currentShift.id}
-        // EN LUGAR DE onSuccess={() => setOrder([])}, USAMOS NUESTRA FUNCIÓN
         onSuccess={handlePaymentSuccess} 
       />
 

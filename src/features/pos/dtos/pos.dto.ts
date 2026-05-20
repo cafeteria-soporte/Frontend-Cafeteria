@@ -1,6 +1,4 @@
-// pos.types.ts
 
-// --- CATEGORÍAS Y PRODUCTOS ---
 export interface Category {
   id: number;
   name: string;
@@ -19,7 +17,6 @@ export interface Product {
   category: Category;
 }
 
-// --- MÉTODO DE PAGO ---
 export interface PaymentMethod {
   id: number;
   name: string;
@@ -28,7 +25,6 @@ export interface PaymentMethod {
 export type CreatePaymentMethodDto = Omit<PaymentMethod, 'id'>;
 export type UpdatePaymentMethodDto = Partial<CreatePaymentMethodDto>;
 
-// --- USUARIO / CAJERO ---
 export interface Role {
   id: number;
   name: string;
@@ -43,7 +39,6 @@ export interface Cashier {
   role: Role;
 }
 
-// --- ÓRDENES, ÍTEMS Y PAGOS ---
 export interface OrderItem {
   userOrderId: number;
   productId: number;
@@ -70,7 +65,7 @@ export interface OrderPayment {
 export interface AddOrderPaymentDto {
   paymentMethodId: number;
   amountTendered: number;
-  amount?: number; // Dependiendo de si tu backend requiere que le envíes el monto exacto a cobrar
+  amount?: number; 
 }
 
 export interface Order {

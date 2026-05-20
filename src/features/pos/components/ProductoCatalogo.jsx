@@ -30,7 +30,6 @@ console.log("Productos recibidos en ProductCatalog:", products);
   return (
     <div className="flex h-full w-full flex-1 flex-col border-r border-border/40">
       
-      {/* HEADER COMPACTO */}
       <div className="px-5 pt-6 pb-3">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -85,7 +84,6 @@ console.log("Productos recibidos en ProductCatalog:", products);
         </div>
       </div>
 
-      {/* GRID AUTO-AJUSTABLE */}
       <div className="flex-1 overflow-y-auto px-5 pb-6">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
           {filteredProducts.map((product) => {
@@ -97,7 +95,6 @@ console.log("Producto en renderizado:", product);
               <Card 
                 key={product.id}
                 onClick={() => !isOutOfStock && onAddProduct(product)}
-                // ESTILO AÑADIDO: Background Image
                 style={hasImage ? {
                   backgroundImage: `url(${hasImage ? product.imageUrl : ""})`,
                   backgroundSize: 'cover',
@@ -108,12 +105,10 @@ console.log("Producto en renderizado:", product);
                 } ${isOutOfStock ? "opacity-60" : ""}`}
               >
                 
-                {/* CAMBIO CLAVE: Overlay oscuro para que el texto resalte sobre la imagen */}
                 {hasImage && (
                   <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors z-0" />
                 )}
 
-                {/* relative y z-10 para que el contenido esté por encima del overlay */}
                 <CardContent className="p-3 relative z-10 h-full flex flex-col justify-between">
                   <div className="flex justify-center mb-2">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${
@@ -155,7 +150,6 @@ console.log("Producto en renderizado:", product);
                     </div>
                   </div>
 
-                  {/* Z-20 en el badge de agotado para que quede sobre la capa de la imagen */}
                   {isOutOfStock && (
                     <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center z-20">
                       <Badge variant="destructive" className="text-[9px] px-2 py-0">Agotado</Badge>

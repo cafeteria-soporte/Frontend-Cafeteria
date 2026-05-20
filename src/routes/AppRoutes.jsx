@@ -11,63 +11,38 @@ import { PantallaCambioContraseña } from "@/features/auth/pages/PantallaCambioC
 import { PantallaCambioContraseñaCajero } from "@/features/auth/pages/PantallaCmabioCotrasenaCajero";
 import { SesionExpirada } from "@/features/auth/pages/SesionExpirada";
 
-// ════════════════════════════════════════════════════════
-//  PÁGINAS COMUNES
-// ══════════════════════════════════════════════════════
-//  Gemina
+
 import { PantallaPerfil } from "@/pages/PantallaPerfil";
 import { PantallaAccesoNoAutorizado } from "@/pages/PantallaAccesoNoAutorizado";
-//  Sergio
 import { CuentaDesactivada } from "@/pages/CuentaDesactivada";
 
-// ════════════════════════════════════════════════════════
-//  DASHBOARD  —  Andrea
-// ════════════════════════════════════════════════════════
 import { DashboardAdminPage } from "@/features/dashboard/pages/DashboardAdminPage";
 
-// ════════════════════════════════════════════════════════
-//  USUARIOS  —  Sergio
-// ════════════════════════════════════════════════════════
+
 import { PantallaGestionAdministradores } from "@/features/users/pages/PantallaGestionAdministradores";
 import { PantallaGestionCajeros } from "@/features/users/pages/PantallaGestionCajeros";
 
-// ════════════════════════════════════════════════════════
-//  PRODUCTOS  —  Andrea
-// ════════════════════════════════════════════════════════
 import { PantallaGestionProductos } from "@/features/products/pages/PantallaGestionProductos";
 import { PantallaGestionCategorias } from "@/features/products/pages/PantallaGestionCategorias";
 
-// ════════════════════════════════════════════════════════
-//  INVENTARIO  —  Andrea
-// ════════════════════════════════════════════════════════
 import { PantallaAjusteStock } from "@/features/inventory/pages/PantallaAjusteStock";
 import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialMovimeintosStock";
 
-// ════════════════════════════════════════════════════════
-//  TURNOS  —  Sergio
-// ════════════════════════════════════════════════════════       
+   
 import { PantallaTurnos }                   from "@/features/shifts/pages/PantallaTurnos";
 import {PantallaResultadoCierreTurno }     from "@/features/shifts/pages/PantallaResultadoCierreTurno";
 import { PantallaPreTurno }                 from "@/features/shifts/pages/PantallaPre-turno";
 import { PantallaVentasTurnoActual }        from "@/features/shifts/pages/PantallaVentasTurnoActual";
 import { PantallaConfiguracionGlobal } from "@/pages/PantallaConfiguracionGlobal";
 
-// ════════════════════════════════════════════════════════
-//  POS  —  Sergio
-// ════════════════════════════════════════════════════════
 import { PantallaPos }                     from "@/features/pos/pages/PantallaPos";
 import { PantallaVentaIndividual }          from "@/features/pos/pages/PantallaVentaIndividual";
 import { PantallaDetalleVenta }            from "@/features/pos/pages/PantallaDetalleVneta";
 import { PantallaComprobante }             from "@/features/pos/pages/PantallaComprobante";
 
-// ════════════════════════════════════════════════════════
-//  NOTIFICACIONES  —  Andrea
-// ════════════════════════════════════════════════════════
 
 import { PantallaNotificaciones } from "@/features/notifications/components/pages/PantallaNotificaciones";
-// ════════════════════════════════════════════════════════
-//  RUTAS
-// ════════════════════════════════════════════════════════
+
 const ProtectedRoute = ({ allowedRoles }) => {
   const token = localStorage.getItem("accessToken");
   const userRole = localStorage.getItem("userRole");
@@ -82,23 +57,19 @@ const ProtectedRoute = ({ allowedRoles }) => {
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      {/* 1. MOVEMOS EL PROVIDER AQUÍ: Ahora envuelve a TODAS las rutas */}
       <ShiftProvider>
         <Routes>
-          {/* ════ RUTAS PÚBLICAS ════ */}
           <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
           <Route path={ROUTES.LOGIN} element={<PantallaLogin />} />
           <Route path={ROUTES.SESION_EXPIRADA} element={<SesionExpirada />} />
           <Route path={ROUTES.CUENTA_DESACTIVADA} element={<CuentaDesactivada />} />
           <Route path={ROUTES.NO_AUTORIZADO} element={<PantallaAccesoNoAutorizado />} />
 
-          {/* ════ PERFIL COMÚN ════ */}
           <Route element={<ProtectedRoute allowedRoles={["root", "admin", "cajero"]} />}>
             <Route path={ROUTES.PERFIL} element={<PantallaPerfil />} />
             <Route path={ROUTES.CAMBIO_CONTRASENA} element={<PantallaCambioContraseñaCajero />} />
           </Route>
 
-          {/* ════ ROL: ROOT ════ */}
           <Route element={<ProtectedRoute allowedRoles={["root"]} />}>
             <Route path="/root" element={<Navigate to={ROUTES.ROOT_DASHBOARD} replace />} />
             <Route path={ROUTES.ROOT_DASHBOARD} element={<DashboardAdminPage />} />
@@ -108,7 +79,6 @@ const AppRoutes = () => {
             <Route path={ROUTES.ROOT_BACKUPS} element={<div>Backups</div>} />
           </Route>
 
-          {/* ════ ROL: ADMINISTRADOR ════ */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
             <Route path={ROUTES.DASHBOARD} element={<DashboardAdminPage />} />
@@ -122,15 +92,12 @@ const AppRoutes = () => {
             <Route path={ROUTES.NOTIFICACIONES} element={<PantallaNotificaciones />} />
           </Route>
 
-          {/* ════ ROL: CAJERO ════ */}
           <Route element={<ProtectedRoute allowedRoles={["cajero"]} />}>
             <Route path="/cajero" element={<Navigate to={ROUTES.PRE_TURNO} replace />} />
             
-            {/* Rutas sin turno abierto */}
             <Route path={ROUTES.PRE_TURNO} element={<PantallaPreTurno />} />
             <Route path={ROUTES.RESULTADO_CIERRE} element={<PantallaResultadoCierreTurno />} />
 
-            {/* ════ ZONA PROTEGIDA POR TURNO ════ */}
             <Route element={<ShiftGuard />}>
               <Route path={ROUTES.POS} element={<PantallaPos />} />
               <Route path={ROUTES.VENTAS_TURNO} element={<PantallaVentasTurnoActual />} />
@@ -140,7 +107,6 @@ const AppRoutes = () => {
             </Route>
           </Route>
 
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to={ROUTES.NO_AUTORIZADO} replace />} />
         </Routes>
       </ShiftProvider>
