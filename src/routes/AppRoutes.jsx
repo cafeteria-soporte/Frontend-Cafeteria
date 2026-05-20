@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate,Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
 import { MainLayout } from "@/layouts/MainLayout";
-import { ShiftGuard } from "@/components/guards/ShiftGuard"; // <-- Agrega este import
-import { ShiftProvider } from "@/features/shifts/contexts/shiftContext"; // <-- Agrega este import
+import { ShiftGuard } from "@/components/guards/ShiftGuard"; 
+import { ShiftProvider } from "@/features/shifts/contexts/shiftContext"; 
+
 // ════════════════════════════════════════════════════════
 //  AUTH  —  Gemina
 // ════════════════════════════════════════════════════════
@@ -13,17 +14,20 @@ import { SesionExpirada } from "@/features/auth/pages/SesionExpirada";
 
 // ════════════════════════════════════════════════════════
 //  PÁGINAS COMUNES
-// ══════════════════════════════════════════════════════
-//  Gemina
+// ════════════════════════════════════════════════════════
 import { PantallaPerfil } from "@/pages/PantallaPerfil";
 import { PantallaAccesoNoAutorizado } from "@/pages/PantallaAccesoNoAutorizado";
-//  Sergio
 import { CuentaDesactivada } from "@/pages/CuentaDesactivada";
 
 // ════════════════════════════════════════════════════════
 //  DASHBOARD  —  Andrea
 // ════════════════════════════════════════════════════════
 import { DashboardAdminPage } from "@/features/dashboard/pages/DashboardAdminPage";
+
+// ════════════════════════════════════════════════════════
+//  ANALÍTICA (SPRINT 2) — Gemina (Seguridad de Rutas UX)
+// ════════════════════════════════════════════════════════
+import { PantallaAnalitica } from "@/features/analytics/pages/PantallaAnalitica"; 
 
 // ════════════════════════════════════════════════════════
 //  USUARIOS  —  Sergio
@@ -47,26 +51,26 @@ import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialM
 //  TURNOS  —  Sergio
 // ════════════════════════════════════════════════════════       
 import { PantallaTurnos }                   from "@/features/shifts/pages/PantallaTurnos";
-import {PantallaResultadoCierreTurno }     from "@/features/shifts/pages/PantallaResultadoCierreTurno";
+import { PantallaResultadoCierreTurno }     from "@/features/shifts/pages/PantallaResultadoCierreTurno";
 import { PantallaPreTurno }                 from "@/features/shifts/pages/PantallaPre-turno";
 import { PantallaVentasTurnoActual }        from "@/features/shifts/pages/PantallaVentasTurnoActual";
-import { PantallaConfiguracionGlobal } from "@/pages/PantallaConfiguracionGlobal";
+import { PantallaConfiguracionGlobal }      from "@/pages/PantallaConfiguracionGlobal";
 
 // ════════════════════════════════════════════════════════
 //  POS  —  Sergio
 // ════════════════════════════════════════════════════════
-import { PantallaPos }                     from "@/features/pos/pages/PantallaPos";
+import { PantallaPos }                      from "@/features/pos/pages/PantallaPos";
 import { PantallaVentaIndividual }          from "@/features/pos/pages/PantallaVentaIndividual";
-import { PantallaDetalleVenta }            from "@/features/pos/pages/PantallaDetalleVneta";
-import { PantallaComprobante }             from "@/features/pos/pages/PantallaComprobante";
+import { PantallaDetalleVenta }             from "@/features/pos/pages/PantallaDetalleVneta";
+import { PantallaComprobante }              from "@/features/pos/pages/PantallaComprobante";
 
 // ════════════════════════════════════════════════════════
 //  NOTIFICACIONES  —  Andrea
 // ════════════════════════════════════════════════════════
-
 import { PantallaNotificaciones } from "@/features/notifications/components/pages/PantallaNotificaciones";
+
 // ════════════════════════════════════════════════════════
-//  RUTAS
+//  REGULADOR DE PROTECCIÓN (GUARD)
 // ════════════════════════════════════════════════════════
 const ProtectedRoute = ({ allowedRoles }) => {
   const token = localStorage.getItem("accessToken");
@@ -82,7 +86,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      {/* 1. MOVEMOS EL PROVIDER AQUÍ: Ahora envuelve a TODAS las rutas */}
       <ShiftProvider>
         <Routes>
           {/* ════ RUTAS PÚBLICAS ════ */}
@@ -106,6 +109,7 @@ const AppRoutes = () => {
             <Route path={ROUTES.ROOT_LOGS} element={<div>Logs</div>} />
             <Route path={ROUTES.ROOT_CONFIGURACION} element={<PantallaConfiguracionGlobal />} />
             <Route path={ROUTES.ROOT_BACKUPS} element={<div>Backups</div>} />
+            <Route path="/root/analitica" element={<PantallaAnalitica />} /> {/* Protegida: Solo Root */}
           </Route>
 
           {/* ════ ROL: ADMINISTRADOR ════ */}
@@ -120,6 +124,7 @@ const AppRoutes = () => {
             <Route path={ROUTES.TURNOS} element={<PantallaTurnos />} />
             <Route path={ROUTES.LOGS_ADMIN} element={<div>Logs</div>} />
             <Route path={ROUTES.NOTIFICACIONES} element={<PantallaNotificaciones />} />
+            <Route path="/admin/analitica" element={<PantallaAnalitica />} /> {/* Protegida: Solo Admin */}
           </Route>
 
           {/* ════ ROL: CAJERO ════ */}
@@ -130,7 +135,7 @@ const AppRoutes = () => {
             <Route path={ROUTES.PRE_TURNO} element={<PantallaPreTurno />} />
             <Route path={ROUTES.RESULTADO_CIERRE} element={<PantallaResultadoCierreTurno />} />
 
-            {/* ════ ZONA PROTEGIDA POR TURNO ════ */}
+            {/* ZONA PROTEGIDA POR TURNO (Aquí NO se incluye analítica) */}
             <Route element={<ShiftGuard />}>
               <Route path={ROUTES.POS} element={<PantallaPos />} />
               <Route path={ROUTES.VENTAS_TURNO} element={<PantallaVentasTurnoActual />} />
