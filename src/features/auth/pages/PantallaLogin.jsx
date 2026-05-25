@@ -89,6 +89,71 @@ export const PantallaLogin = () => {
           >
             Iniciar sesión <ChevronRight size={18} />
           </button>
+
+// BOTONES DE DESARROLLO - ELIMINAR ANTES DE PRODUCCIÓN (es que no podia entrar a la pantalla de admin sin hacer login, asi que hice esto para facilitar el desarrollo)
+          <div className="grid grid-cols-3 gap-2 pt-2">
+  <button
+    type="button"
+    onClick={() => {
+      localStorage.setItem("accessToken", "dev-token-root");
+      localStorage.setItem("userRole", "root");
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          id: 1,
+          username: "root.dev",
+          role: { name: "root" },
+        })
+      );
+      window.location.href = ROUTES.ROOT_DASHBOARD;
+    }}
+    className="text-xs bg-[#442727] text-white rounded-xl py-2 hover:opacity-90"
+  >
+    Ver Root
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      localStorage.setItem("accessToken", "dev-token-admin");
+      localStorage.setItem("userRole", "admin");
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          id: 2,
+          username: "admin.dev",
+          role: { name: "admin" },
+        })
+      );
+      window.location.href = ROUTES.HISTORIAL_STOCK;
+    }}
+    className="text-xs bg-[#7F793B] text-white rounded-xl py-2 hover:opacity-90"
+  >
+    Ver Admin
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      localStorage.setItem("accessToken", "dev-token-cajero");
+      localStorage.setItem("userRole", "cajero");
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          id: 3,
+          username: "cajero.dev",
+          role: { name: "cajero" },
+        })
+      );
+      window.location.href = ROUTES.PRE_TURNO;
+    }}
+    className="text-xs bg-[#D2C6B2] text-[#442727] rounded-xl py-2 hover:opacity-90"
+  >
+    Ver Cajero
+  </button>
+</div>
+// FIN BOTONES DE DESARROLLO
+
         </form>
 
         <p className="mt-12 text-[10px] text-[#442727]/50 text-center leading-relaxed px-6 italic font-medium">

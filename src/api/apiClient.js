@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://cafeteria-server-udc9.onrender.com/api/cafeteria";
+export const API_BASE_URL = "https://cafeteria-server-udc9.onrender.com/api/cafeteria";
 
 export const apiClient = async (endpoint, options = {}) => {
   const token = localStorage.getItem("accessToken");

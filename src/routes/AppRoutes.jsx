@@ -40,7 +40,7 @@ import { PantallaGestionCategorias } from "@/features/products/pages/PantallaGes
 //  INVENTARIO  —  Andrea
 // ════════════════════════════════════════════════════════
 import { PantallaAjusteStock } from "@/features/inventory/pages/PantallaAjusteStock";
-import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialMovimeintosStock";
+import { DashboardInventarioDSS } from "@/features/inventory/pages/DashboardInventarioDSS";
 
 // ════════════════════════════════════════════════════════
 //  TURNOS  —  Sergio
@@ -159,7 +159,7 @@ const AppRoutes = () => {
           <Route path={ROUTES.AJUSTE_STOCK} element={<PantallaAjusteStock />} />
           <Route
             path={ROUTES.HISTORIAL_STOCK}
-            element={<HistorialMovimientosStock />}
+            element={<DashboardInventarioDSS />}
           />
           <Route path={ROUTES.TURNOS} element={<PantallaTurnos />} />
           <Route path={ROUTES.LOGS_ADMIN} element={<div>Logs</div>} />
