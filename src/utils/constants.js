@@ -14,6 +14,7 @@ export const ROUTES = {
   ROOT_BACKUPS:             "/root/backups",
 
   DASHBOARD:                "/dashboard",
+  ANALYTICS:                "/analytics",
   CAJEROS:                  "/cajeros",
   PRODUCTOS:                "/productos",
   CATEGORIAS:               "/categorias",

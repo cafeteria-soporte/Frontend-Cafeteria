@@ -6,7 +6,7 @@ import {
   Bell, LogOut, Sun, Moon, Store, PanelLeft,
   ShoppingCart, Package, Tag, ArrowLeftRight,
   History, ClipboardList, ShieldAlert, ListOrdered,
-  UserCircle, KeyRound, Menu, X,
+  PieChart, UserCircle, KeyRound, Menu, X,
   User,
 } from "lucide-react";
 import { ROUTES } from "@/utils/constants";
@@ -25,9 +25,11 @@ const SIDEBAR_LINKS = {
   ],
 
   admin: [
-    { title: "Dashboard",           icon: LayoutDashboard, path: ROUTES.DASHBOARD },
-    { title: "Cajeros",             icon: Users,           path: ROUTES.CAJEROS },
-    { title: "Productos",           icon: Package,         path: ROUTES.PRODUCTOS },
+    { title: "Dashboard",                        icon: LayoutDashboard, path: ROUTES.DASHBOARD },
+    { title: "Dashboard Gerencial (DSS)",        icon: PieChart,        path: ROUTES.ANALYTICS },
+    { title: "Auditoría de Cajas (DSS)",        icon: ShieldAlert,     path: "/auditoria-caja" },
+    { title: "Cajeros",                          icon: Users,           path: ROUTES.CAJEROS },
+    { title: "Productos",                        icon: Package,         path: ROUTES.PRODUCTOS },
     { title: "Categorías",          icon: Tag,             path: ROUTES.CATEGORIAS },
     { title: "Ajuste de Stock",     icon: ArrowLeftRight,  path: ROUTES.AJUSTE_STOCK },
     { title: "Historial Stock",     icon: History,         path: ROUTES.HISTORIAL_STOCK },

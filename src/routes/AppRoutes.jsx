@@ -17,6 +17,7 @@ import { PantallaAccesoNoAutorizado } from "@/pages/PantallaAccesoNoAutorizado";
 import { CuentaDesactivada } from "@/pages/CuentaDesactivada";
 
 import { DashboardAdminPage } from "@/features/dashboard/pages/DashboardAdminPage";
+import AnalyticDashboard from "@/features/dashboard/pages/AnalyticDashboard";
 
 
 import { PantallaGestionAdministradores } from "@/features/users/pages/PantallaGestionAdministradores";
@@ -24,6 +25,7 @@ import { PantallaGestionCajeros } from "@/features/users/pages/PantallaGestionCa
 
 import { PantallaGestionProductos } from "@/features/products/pages/PantallaGestionProductos";
 import { PantallaGestionCategorias } from "@/features/products/pages/PantallaGestionCategorias";
+import FinancialDashboard from "@/features/dashboard/pages/FinancialDashboard";
 
 import { PantallaAjusteStock } from "@/features/inventory/pages/PantallaAjusteStock";
 import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialMovimeintosStock";
@@ -82,6 +84,8 @@ const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
             <Route path={ROUTES.DASHBOARD} element={<DashboardAdminPage />} />
+            <Route path={ROUTES.ANALYTICS} element={<AnalyticDashboard />} />
+            <Route path="/auditoria-caja" element={<FinancialDashboard />} />
             <Route path={ROUTES.CAJEROS} element={<PantallaGestionCajeros />} />
             <Route path={ROUTES.PRODUCTOS} element={<PantallaGestionProductos />} />
             <Route path={ROUTES.CATEGORIAS} element={<PantallaGestionCategorias />} />
