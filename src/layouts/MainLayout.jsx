@@ -28,6 +28,7 @@ const SIDEBAR_LINKS = {
     { title: "Dashboard",                        icon: LayoutDashboard, path: ROUTES.DASHBOARD },
     { title: "Dashboard Gerencial (DSS)",        icon: PieChart,        path: ROUTES.ANALYTICS },
     { title: "Auditoría de Cajas (DSS)",        icon: ShieldAlert,     path: "/auditoria-caja" },
+    { title: "Inventario (DSS)",                icon: ClipboardList,   path: ROUTES.INVENTORY },
     { title: "Cajeros",                          icon: Users,           path: ROUTES.CAJEROS },
     { title: "Productos",                        icon: Package,         path: ROUTES.PRODUCTOS },
     { title: "Categorías",          icon: Tag,             path: ROUTES.CATEGORIAS },

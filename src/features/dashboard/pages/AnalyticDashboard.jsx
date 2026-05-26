@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/api/axiosInstance';
 import { Calendar, RefreshCw, DollarSign, ShoppingCart, TrendingUp, CreditCard, Download } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -11,8 +11,19 @@ import {
   Tooltip,
   Line,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
 import { ChartLoader, SkeletonBar } from '../components/ChartLoader';
+import SpinnerLoader from '@/components/ui/SpinnerLoader';
+
+const PAYMENT_METHOD_COLORS = {
+  Efectivo: '#10B981',
+  'Transferencia/QR': '#3B82F6',
+  Mixto: '#F59E0B',
+};
 
 // Note: Removed static mockDashboardData; charts use `chartData` populated from API with safe fallbacks.
 
@@ -47,13 +58,29 @@ const AnalyticDashboard = () => {
     topProducts: [],
     trendComparison: [],
   });
+  const [paymentMethodsData, setPaymentMethodsData] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    to: new Date().toISOString().split('T')[0],
-  });
+
+  // Fecha seleccionada (puede venir de DatePicker como Date u "YYYY-MM-DD")
+  const [startDate, setStartDate] = useState('2026-05-01');
+  const [endDate, setEndDate] = useState('2026-05-31');
+
+  /**
+   * ────────────────────────────────────────────────────────────────────
+   * Helper: Formatea Date / estado de DatePicker a YYYY-MM-DD
+   * ────────────────────────────────────────────────────────────────────
+   */
+  const formatDateForQuery = (value) => {
+    if (!value) return null;
+    if (typeof value === 'string') return value;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      const localDate = new Date(value.getTime() - value.getTimezoneOffset() * 60000);
+      return localDate.toISOString().split('T')[0];
+    }
+    return null;
+  };
 
   /**
    * ────────────────────────────────────────────────────────────────────
@@ -65,6 +92,9 @@ const AnalyticDashboard = () => {
       setIsLoading(true);
       setError(null);
 
+      const formattedFrom = formatDateForQuery(startDate);
+      const formattedTo = formatDateForQuery(endDate);
+
       // Helper para extraer arrays de una respuesta robustamente
       const extractArray = (resp) => {
         const maybe = resp?.data?.data ?? resp?.data ?? resp;
@@ -74,23 +104,63 @@ const AnalyticDashboard = () => {
       };
 
       try {
-        const [byPeriodResp, topProductsResp, byCategoryResp, lowStockResp] = await Promise.all([
-          axios.get('/api/cafeteria/analytics/sales/by-period', { params: { from: dateRange.from, to: dateRange.to } }),
-          axios.get('/api/cafeteria/analytics/sales/top-products', { params: { from: dateRange.from, to: dateRange.to } }),
-          axios.get('/api/cafeteria/analytics/sales/by-category', { params: { from: dateRange.from, to: dateRange.to } }),
-          axios.get('/api/cafeteria/products/low-stock'),
+        const [byPeriodResp, topProductsResp, byCategoryResp, paymentMethodsResp, lowStockResp] = await Promise.all([
+          axiosInstance.get('/analytics/sales/by-period', { params: { from: formattedFrom, to: formattedTo } }),
+          axiosInstance.get('/analytics/sales/top-products', { params: { from: formattedFrom, to: formattedTo } }),
+          axiosInstance.get('/analytics/sales/by-category', { params: { from: formattedFrom, to: formattedTo } }),
+          axiosInstance.get('/analytics/sales/payment-methods', { params: { from: formattedFrom, to: formattedTo } }),
+          axiosInstance.get('/products/low-stock'),
         ]);
 
         const salesByHour = extractArray(byPeriodResp);
         const topProducts = extractArray(topProductsResp);
         const paymentMethods = extractArray(byCategoryResp);
+        const paymentMethodsRaw = paymentMethodsResp?.data?.data ?? paymentMethodsResp?.data ?? [];
         const lowStockProducts = extractArray(lowStockResp);
 
-        // KPIs derivadas
-        const totalSales = Array.isArray(salesByHour) ? salesByHour.reduce((s, r) => s + (r.amount || 0), 0) : 0;
-        const totalOrders = Array.isArray(salesByHour) ? salesByHour.reduce((s, r) => s + (r.transactions || 0), 0) : 0;
-        const averageTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
+        const firstPeriod = Array.isArray(salesByHour) && salesByHour.length > 0 ? salesByHour[0] : {};
+        const totalSales = firstPeriod.revenue ?? 0;
+        const totalOrders = firstPeriod.orderCount ?? 0;
+        const averageTicket = firstPeriod.avgTicket ?? (totalOrders > 0 ? totalSales / totalOrders : 0);
         const criticalStockProducts = Array.isArray(lowStockProducts) ? lowStockProducts.length : 0;
+
+        const mappedSalesByHour = Array.isArray(salesByHour)
+          ? salesByHour.map((item) => ({
+              time: item.period || item.time || item.label || '',
+              amount: item.revenue ?? item.amount ?? 0,
+              transactions: item.orderCount ?? item.transactions ?? 0,
+              today: item.revenue ?? item.amount ?? 0,
+              yesterday: item.yesterday ?? 0,
+            }))
+          : [];
+
+        const mappedTopProducts = Array.isArray(topProducts)
+          ? topProducts.map((item) => ({
+              name: item.name ?? item.productName ?? 'Producto',
+              sales: item.totalQuantity ?? item.quantity ?? item.sales ?? 0,
+              revenue: item.totalRevenue ?? item.revenue ?? 0,
+            }))
+          : [];
+
+        const mappedPaymentMethods = Array.isArray(paymentMethods)
+          ? paymentMethods.map((item) => ({
+              ...item,
+              name: item.name,
+              porcentaje: Math.round(Number(item.percentage || 0)),
+              value: Math.round(Number(item.percentage || 0)),
+            }))
+          : [];
+
+        const mappedPaymentMethodsData = Array.isArray(paymentMethodsRaw)
+          ? paymentMethodsRaw.map((item) => ({
+              name:
+                item.method === 'cash' ? 'Efectivo' :
+                item.method === 'mixed' ? 'Mixto' :
+                item.method === 'transfer' ? 'Transferencia/QR' :
+                item.method,
+              value: Math.round(Number(item.percentage || 0)),
+            }))
+          : [];
 
         setKpis({
           totalSales,
@@ -101,30 +171,24 @@ const AnalyticDashboard = () => {
         });
 
         setChartData({
-          salesByHour: Array.isArray(salesByHour) ? salesByHour : [],
-          paymentMethods: Array.isArray(paymentMethods) ? paymentMethods : [],
-          topProducts: Array.isArray(topProducts) ? topProducts : [],
-          trendComparison: Array.isArray(salesByHour) ? salesByHour : [],
+          salesByHour: mappedSalesByHour,
+          paymentMethods: mappedPaymentMethods,
+          topProducts: mappedTopProducts,
+          trendComparison: mappedSalesByHour,
         });
+        setPaymentMethodsData(mappedPaymentMethodsData);
 
       } catch (err) {
-        console.error('Error fetching analytics data:', err);
-        setError(err.response?.data?.message || err.message || 'Error al cargar los datos');
-
-        // Fallback seguro a arrays vacíos
-        setChartData({
-          salesByHour: [],
-          paymentMethods: [],
-          topProducts: [],
-          trendComparison: [],
-        });
+        const errorMsg = err.response?.data?.message || err.message || 'Error al cargar los datos';
+        setError(errorMsg);
+        setChartData({ salesByHour: [], paymentMethods: [], topProducts: [], trendComparison: [] });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [startDate, endDate]);
 
   // Usar datos provistos por la API (fallback a arrays vacíos para evitar errores)
   const displaySalesData = Array.isArray(chartData.salesByHour) ? chartData.salesByHour : [];
@@ -134,10 +198,8 @@ const AnalyticDashboard = () => {
    * Maneja cambios en el rango de fechas
    */
   const handleDateChange = (field, value) => {
-    setDateRange((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === 'from') setStartDate(formatDateForQuery(value));
+    if (field === 'to') setEndDate(formatDateForQuery(value));
   };
 
   /**
@@ -154,23 +216,67 @@ const AnalyticDashboard = () => {
       return [];
     };
 
+    const formattedFrom = formatDateForQuery(startDate);
+    const formattedTo = formatDateForQuery(endDate);
+
     try {
-      const [byPeriodResp, topProductsResp, byCategoryResp, lowStockResp] = await Promise.all([
-        axios.get('/api/cafeteria/analytics/sales/by-period', { params: { from: dateRange.from, to: dateRange.to } }),
-        axios.get('/api/cafeteria/analytics/sales/top-products', { params: { from: dateRange.from, to: dateRange.to } }),
-        axios.get('/api/cafeteria/analytics/sales/by-category', { params: { from: dateRange.from, to: dateRange.to } }),
-        axios.get('/api/cafeteria/products/low-stock'),
+      const [byPeriodResp, topProductsResp, byCategoryResp, paymentMethodsResp, lowStockResp] = await Promise.all([
+        axiosInstance.get('/analytics/sales/by-period', { params: { from: formattedFrom, to: formattedTo } }),
+        axiosInstance.get('/analytics/sales/top-products', { params: { from: formattedFrom, to: formattedTo } }),
+        axiosInstance.get('/analytics/sales/by-category', { params: { from: formattedFrom, to: formattedTo } }),
+        axiosInstance.get('/analytics/sales/payment-methods', { params: { from: formattedFrom, to: formattedTo } }),
+        axiosInstance.get('/products/low-stock'),
       ]);
 
       const salesByHour = extractArray(byPeriodResp);
       const topProducts = extractArray(topProductsResp);
       const paymentMethods = extractArray(byCategoryResp);
+      const paymentMethodsRaw = paymentMethodsResp?.data?.data ?? paymentMethodsResp?.data ?? [];
       const lowStockProducts = extractArray(lowStockResp);
 
-      const totalSales = Array.isArray(salesByHour) ? salesByHour.reduce((s, r) => s + (r.amount || 0), 0) : 0;
-      const totalOrders = Array.isArray(salesByHour) ? salesByHour.reduce((s, r) => s + (r.transactions || 0), 0) : 0;
-      const averageTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
+      const firstPeriod = Array.isArray(salesByHour) && salesByHour.length > 0 ? salesByHour[0] : {};
+      const totalSales = firstPeriod.revenue ?? 0;
+      const totalOrders = firstPeriod.orderCount ?? 0;
+      const averageTicket = firstPeriod.avgTicket ?? (totalOrders > 0 ? totalSales / totalOrders : 0);
       const criticalStockProducts = Array.isArray(lowStockProducts) ? lowStockProducts.length : 0;
+
+      const mappedSalesByHour = Array.isArray(salesByHour)
+        ? salesByHour.map((item) => ({
+            time: item.period || item.time || item.label || '',
+            amount: item.revenue ?? item.amount ?? 0,
+            transactions: item.orderCount ?? item.transactions ?? 0,
+            today: item.revenue ?? item.amount ?? 0,
+            yesterday: item.yesterday ?? 0,
+          }))
+        : [];
+
+      const mappedTopProducts = Array.isArray(topProducts)
+        ? topProducts.map((item) => ({
+            name: item.name ?? item.productName ?? 'Producto',
+            sales: item.totalQuantity ?? item.quantity ?? item.sales ?? 0,
+            revenue: item.totalRevenue ?? item.revenue ?? 0,
+          }))
+        : [];
+
+      const mappedPaymentMethods = Array.isArray(paymentMethods)
+        ? paymentMethods.map((item) => ({
+            ...item,
+            name: item.name,
+            porcentaje: Math.round(Number(item.percentage || 0)),
+            value: Math.round(Number(item.percentage || 0)),
+          }))
+        : [];
+
+      const mappedPaymentMethodsData = Array.isArray(paymentMethodsRaw)
+        ? paymentMethodsRaw.map((item) => ({
+            name:
+              item.method === 'cash' ? 'Efectivo' :
+              item.method === 'mixed' ? 'Mixto' :
+              item.method === 'transfer' ? 'Transferencia/QR' :
+              item.method,
+            value: Math.round(Number(item.percentage || 0)),
+          }))
+        : [];
 
       setKpis({
         totalSales,
@@ -181,34 +287,31 @@ const AnalyticDashboard = () => {
       });
 
       setChartData({
-        salesByHour: Array.isArray(salesByHour) ? salesByHour : [],
-        paymentMethods: Array.isArray(paymentMethods) ? paymentMethods : [],
-        topProducts: Array.isArray(topProducts) ? topProducts : [],
-        trendComparison: Array.isArray(salesByHour) ? salesByHour : [],
+        salesByHour: mappedSalesByHour,
+        paymentMethods: mappedPaymentMethods,
+        topProducts: mappedTopProducts,
+        trendComparison: mappedSalesByHour,
       });
-
+      setPaymentMethodsData(mappedPaymentMethodsData);
     } catch (err) {
-      console.error('Error refreshing data:', err);
-      setError('Error al actualizar los datos');
+      const errorMsg = err.response?.data?.message || err.message || 'Error al actualizar los datos';
+      setError(errorMsg);
       setChartData({ salesByHour: [], paymentMethods: [], topProducts: [], trendComparison: [] });
     } finally {
       setIsLoading(false);
     }
   };
-
-  /**
-   * Maneja la descarga de reportes
-   */
   const handleExportReport = async (format) => {
-    try {
-      // TODO: Implementar exportación cuando endpoint esté listo
-      console.log(`Exportando reporte en ${format.toUpperCase()}...`);
-      // const blob = await exportSalesReport(dateRange, format);
-      // Crear descarga
-    } catch (err) {
-      console.error(`Error exporting ${format}:`, err);
-    }
+    // TODO: Implementar cuando endpoint esté disponible
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-background min-h-screen text-foreground transition-base">
+        <SpinnerLoader />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-background min-h-screen text-foreground transition-base">
@@ -231,23 +334,30 @@ const AnalyticDashboard = () => {
           </button>
         </div>
 
-        {/* Date Range Selector */}
+        {/* Date Range Selector - HARDCODED para DEBUG */}
         <div className="flex items-center gap-4 mt-4 bg-card p-4 rounded-lg border border-border">
           <Calendar size={18} className="text-muted-foreground" />
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateRange.from}
-              onChange={(e) => handleDateChange('from', e.target.value)}
-              className="px-3 py-1 border border-border rounded bg-background text-foreground text-sm"
-            />
-            <span className="text-muted-foreground">hasta</span>
-            <input
-              type="date"
-              value={dateRange.to}
-              onChange={(e) => handleDateChange('to', e.target.value)}
-              className="px-3 py-1 border border-border rounded bg-background text-foreground text-sm"
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground" htmlFor="startDate">Desde</label>
+              <input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground" htmlFor="endDate">Hasta</label>
+              <input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
           </div>
 
           {/* Botones de exportación */}
@@ -332,9 +442,9 @@ const AnalyticDashboard = () => {
         {/* Gráfico 1: Ventas por hora */}
         <div className="card hover-lift animate-slide-up" style={{ animationDelay: '100ms' }}>
           <div className="card-header border-b border-border p-6 pb-4">
-            <h2 className="card-title text-lg">Ventas por Hora</h2>
+            <h2 className="card-title text-lg">Tendencia de Ventas</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Montos y transacciones cada hora
+              Evolución histórica de ingresos
             </p>
           </div>
           <div className="card-content p-6">
@@ -388,9 +498,9 @@ const AnalyticDashboard = () => {
         {/* Gráfico 2: Métodos de pago */}
         <div className="card hover-lift animate-slide-up" style={{ animationDelay: '150ms' }}>
           <div className="card-header border-b border-border p-6 pb-4">
-            <h2 className="card-title text-lg">Distribución Métodos de Pago</h2>
+            <h2 className="card-title text-lg">"Ventas por Categoría"</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Porcentaje de cada método utilizado
+              Porcentaje de ventas según la categoría
             </p>
           </div>
           <div className="card-content p-6">
@@ -417,7 +527,7 @@ const AnalyticDashboard = () => {
                         />
                         <span className="text-sm text-foreground">{method.name}</span>
                       </div>
-                      <span className="text-sm font-semibold text-muted-foreground">{method.percentage}%</span>
+                      <span className="text-sm font-semibold text-muted-foreground">{method.value}%</span>
                     </div>
                   ))}
                 </div>
@@ -428,7 +538,7 @@ const AnalyticDashboard = () => {
       </div>
 
       {/* Charts Grid - Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         {/* Gráfico 3: Top 5 productos */}
         <div className="card hover-lift animate-slide-up" style={{ animationDelay: '200ms' }}>
           <div className="card-header border-b border-border p-6 pb-4">
@@ -485,7 +595,65 @@ const AnalyticDashboard = () => {
           </div>
         </div>
 
-        {/* Gráfico 4: Comparativa hoy vs ayer */}
+        {/* Gráfico 4: Distribución de Pagos */}
+        <div className="card hover-lift animate-slide-up" style={{ animationDelay: '225ms' }}>
+          <div className="card-header border-b border-border p-6 pb-4">
+            <h2 className="card-title text-lg">Distribución de Pagos</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Métodos de pago más usados en el período
+            </p>
+          </div>
+          <div className="card-content p-6">
+            {isLoading ? (
+              <ChartLoader height="h-64" />
+            ) : error ? (
+              <div className="h-64 bg-destructive/10 rounded-md border border-destructive/30 flex items-center justify-center text-center">
+                <div>
+                  <p className="text-sm font-medium text-destructive">Error al cargar datos</p>
+                  <p className="text-xs text-muted-foreground mt-1">{error}</p>
+                </div>
+              </div>
+            ) : paymentMethodsData.length === 0 ? (
+              <div className="h-64 flex items-center justify-center text-center text-sm text-muted-foreground">
+                No hay datos de métodos de pago disponibles para este rango.
+              </div>
+            ) : (
+              <div style={{ width: '100%', height: '256px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={paymentMethodsData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={88}
+                      paddingAngle={4}
+                      label={({ name, percent }) => `${name}: ${Math.round(percent * 100)}%`}
+                    >
+                      {paymentMethodsData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${entry.name}-${index}`}
+                          fill={PAYMENT_METHOD_COLORS[entry.name] ?? '#8B5CF6'}
+                        />
+                      ))}
+                    </Pie>
+                    <Legend
+                      layout="vertical"
+                      verticalAlign="middle"
+                      align="right"
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Gráfico 5: Comparativa hoy vs ayer */}
         <div className="card hover-lift animate-slide-up" style={{ animationDelay: '250ms' }}>
           <div className="card-header border-b border-border p-6 pb-4">
             <h2 className="card-title text-lg">Comparativa de Ventas</h2>

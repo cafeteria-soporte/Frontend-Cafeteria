@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate,Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
-import { MainLayout } from "@/layouts/MainLayout";
-import { ShiftGuard } from "@/components/guards/ShiftGuard"; // <-- Agrega este import
-import { ShiftProvider } from "@/features/shifts/contexts/shiftContext"; // <-- Agrega este import
+import { ShiftGuard } from "@/components/guards/ShiftGuard";
+import ProtectedRoute from "@/components/guards/ProtectedRoute";
+import { ShiftProvider } from "@/features/shifts/contexts/shiftContext";
 // ════════════════════════════════════════════════════════
 //  AUTH  —  Gemina
 // ════════════════════════════════════════════════════════
@@ -26,6 +26,7 @@ import { PantallaGestionCajeros } from "@/features/users/pages/PantallaGestionCa
 import { PantallaGestionProductos } from "@/features/products/pages/PantallaGestionProductos";
 import { PantallaGestionCategorias } from "@/features/products/pages/PantallaGestionCategorias";
 import FinancialDashboard from "@/features/dashboard/pages/FinancialDashboard";
+import InventoryDashboard from "@/features/dashboard/pages/InventoryDashboard";
 
 import { PantallaAjusteStock } from "@/features/inventory/pages/PantallaAjusteStock";
 import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialMovimeintosStock";
@@ -44,17 +45,6 @@ import { PantallaComprobante }             from "@/features/pos/pages/PantallaCo
 
 
 import { PantallaNotificaciones } from "@/features/notifications/components/pages/PantallaNotificaciones";
-
-const ProtectedRoute = ({ allowedRoles }) => {
-  const token = localStorage.getItem("accessToken");
-  const userRole = localStorage.getItem("userRole");
-
-  if (!token) return <Navigate to={ROUTES.LOGIN} replace />;
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
-    return <Navigate to={ROUTES.NO_AUTORIZADO} replace />;
-  }
-  return <MainLayout rol={userRole} />;
-};
 
 const AppRoutes = () => {
   return (
@@ -81,11 +71,15 @@ const AppRoutes = () => {
             <Route path={ROUTES.ROOT_BACKUPS} element={<div>Backups</div>} />
           </Route>
 
+          <Route element={<ProtectedRoute allowedRoles={["root", "admin"]} />}>
+            <Route path={ROUTES.ANALYTICS} element={<AnalyticDashboard />} />
+            <Route path="/auditoria-caja" element={<FinancialDashboard />} />
+            <Route path={ROUTES.INVENTORY} element={<InventoryDashboard />} />
+          </Route>
+
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
             <Route path={ROUTES.DASHBOARD} element={<DashboardAdminPage />} />
-            <Route path={ROUTES.ANALYTICS} element={<AnalyticDashboard />} />
-            <Route path="/auditoria-caja" element={<FinancialDashboard />} />
             <Route path={ROUTES.CAJEROS} element={<PantallaGestionCajeros />} />
             <Route path={ROUTES.PRODUCTOS} element={<PantallaGestionProductos />} />
             <Route path={ROUTES.CATEGORIAS} element={<PantallaGestionCategorias />} />

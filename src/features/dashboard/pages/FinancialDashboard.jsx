@@ -1,15 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '@/api/axiosInstance';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, Wallet, Activity } from 'lucide-react';
+import { RefreshCw, Activity } from 'lucide-react';
+import SpinnerLoader from '@/components/ui/SpinnerLoader';
 
 const FinancialDashboard = () => {
   const [activeRange, setActiveRange] = useState('7d');
+  // Fechas seleccionadas (pueden venir como Date o 'YYYY-MM-DD')
+  const [from, setFrom] = useState('2026-05-01');
+  const [to, setTo] = useState('2026-05-31');
 
   const [discrepanciesData, setDiscrepanciesData] = useState([]);
-  const [voidsData, setVoidsData] = useState([]);
   const [shiftsList, setShiftsList] = useState([]);
-  const [latestVoids, setLatestVoids] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const extractArray = (resp) => {
     const maybe = resp?.data?.data ?? resp?.data ?? resp;
@@ -19,41 +22,45 @@ const FinancialDashboard = () => {
   };
 
   const fetchShiftsAnalytics = async () => {
+    setIsLoading(true);
     try {
-      const [discrepanciesResp, voidsResp] = await Promise.all([
-        axios.get('/api/cafeteria/analytics/shifts/discrepancies'),
-        axios.get('/api/cafeteria/analytics/shifts/voids'),
-      ]);
+      const discrepanciesResp = await axiosInstance.get('/analytics/shifts/discrepancies');
 
-      const d = extractArray(discrepanciesResp);
-      const v = extractArray(voidsResp);
+      const discrepanciesArray = Array.isArray(discrepanciesResp?.data) ? discrepanciesResp.data : [];
+      const mappedDiscrepancies = discrepanciesArray.map((item) => ({
+        id: item.shiftRecordId,
+        cajero: item.cashierName,
+        fecha: item.openedAt ? new Date(item.openedAt).toLocaleDateString() : '-',
+        esperado: item.expectedAmount ?? 0,
+        declarado: item.declaredAmount ?? 0,
+        descuadre: item.discrepancy ?? 0,
+        estado: item.discrepancyAlert ? 'Alerta' : 'OK',
+      }));
 
-      setDiscrepanciesData(Array.isArray(d) ? d : []);
-      setVoidsData(Array.isArray(v) ? v : []);
-
-      // Optional extraction of shifts list or latest voids
-      if (Array.isArray(d) && d.length > 0 && d[0].shifts) {
-        setShiftsList(Array.isArray(d[0].shifts) ? d[0].shifts : []);
-      }
-      if (Array.isArray(v) && v.length > 0 && v[0].recent) {
-        setLatestVoids(Array.isArray(v[0].recent) ? v[0].recent : []);
-      }
+      setDiscrepanciesData(mappedDiscrepancies || []);
+      setShiftsList([]);
 
     } catch (err) {
-      console.error('Error fetching shifts analytics:', err);
       setDiscrepanciesData([]);
-      setVoidsData([]);
       setShiftsList([]);
-      setLatestVoids([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchShiftsAnalytics();
-  }, []);
+  }, [from, to]);
 
-  const totalVoids = useMemo(() => Array.isArray(voidsData) ? voidsData.reduce((sum, item) => sum + (item.value || 0), 0) : 0, [voidsData]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground p-6">
+        <SpinnerLoader />
+      </div>
+    );
+  }
 
+  const totalDiscrepancy = discrepanciesData.reduce((acc, curr) => acc + (Number(curr.descuadre) || 0), 0);
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
       <div className="flex flex-col gap-3 mb-6 animate-slide-up">
@@ -78,9 +85,24 @@ const FinancialDashboard = () => {
             </button>
           ))}
         </div>
+
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Control rápido</p>
+              <h3 className="text-lg font-semibold text-foreground">Descuadre total</h3>
+            </div>
+            <div className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground border border-border">
+              Bs. {totalDiscrepancy}
+            </div>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Último turno con descuadre negativo registrado. Revisa la caja y cierra con operativa para corregir discrepancias.
+          </p>
+        </section>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="space-y-6">
         <div className="space-y-6">
           <section className="card border border-border bg-card shadow-sm animate-slide-up">
             <div className="card-header border-b border-border p-6">
@@ -94,9 +116,9 @@ const FinancialDashboard = () => {
             </div>
             <div className="card-content p-6 h-[360px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={discrepanciesData} margin={{ top: 20, right: 24, left: 0, bottom: 10 }}>
+                <BarChart data={Array.isArray(discrepanciesData) && discrepanciesData.length > 0 ? discrepanciesData : []} margin={{ top: 20, right: 24, left: 0, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-border)" vertical={false} />
-                  <XAxis dataKey="turno" stroke="var(--text-foreground)" tickLine={false} axisLine={false} />
+                  <XAxis dataKey="cajero" stroke="var(--text-foreground)" tickLine={false} axisLine={false} />
                   <YAxis stroke="var(--text-foreground)" tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{
@@ -105,8 +127,8 @@ const FinancialDashboard = () => {
                       color: 'var(--text-foreground)',
                     }}
                   />
-                  <Bar dataKey="monto_esperado" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="monto_declarado" fill="var(--color-secondary)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="esperado" name="Monto Esperado" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="declarado" name="Monto Declarado" fill="#A8A29E" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -130,92 +152,29 @@ const FinancialDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {shiftsList.map((shift) => (
-                    <tr key={shift.id} className="hover:bg-background/50 transition-colors">
-                      <td className="py-4 font-medium text-foreground">{shift.id}</td>
-                      <td className="py-4 text-muted-foreground">{shift.cajero}</td>
-                      <td className="py-4 text-muted-foreground">{shift.fecha}</td>
-                      <td className="py-4 text-foreground">Bs. {shift.totalVentas.toLocaleString('es-BO')}</td>
-                      <td className={`py-4 font-medium ${shift.descuadre < 0 ? 'text-destructive' : 'text-foreground'}`}>{shift.descuadre < 0 ? `- Bs. ${Math.abs(shift.descuadre).toLocaleString('es-BO')}` : `Bs. ${shift.descuadre.toLocaleString('es-BO')}`}</td>
-                      <td className="py-4"><span className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground border border-border">{shift.estado}</span></td>
+                  {Array.isArray(discrepanciesData) && discrepanciesData.length > 0 ? (
+                    discrepanciesData.map((turno) => (
+                      <tr key={turno?.id ?? Math.random()} className="hover:bg-background/50 transition-colors">
+                        <td className="py-4 font-medium text-foreground">{turno?.id ?? '-'}</td>
+                        <td className="py-4 text-muted-foreground">{turno?.cajero ?? '-'}</td>
+                        <td className="py-4 text-muted-foreground">{turno?.fecha ?? '-'}</td>
+                        <td className="py-4 text-foreground">Bs. {turno?.esperado !== undefined ? turno.esperado.toLocaleString?.('es-BO') ?? turno.esperado : '-'}</td>
+                        <td className={`py-4 font-medium ${turno?.descuadre && turno.descuadre < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                          {turno?.descuadre !== undefined ? (turno.descuadre < 0 ? `- Bs. ${Math.abs(turno.descuadre).toLocaleString('es-BO')}` : `Bs. ${turno.descuadre.toLocaleString('es-BO')}`) : '-'}
+                        </td>
+                        <td className="py-4"><span className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground border border-border">{turno?.estado ?? '-'}</span></td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="py-6 text-center text-sm text-muted-foreground">No hay datos de turnos disponibles.</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           </section>
         </div>
-
-        <aside className="space-y-6">
-          <section className="card border border-border bg-card shadow-sm animate-slide-up">
-            <div className="card-header border-b border-border p-6">
-              <h2 className="card-title text-xl font-semibold">Anulaciones</h2>
-              <p className="text-sm text-muted-foreground mt-1">Motivos de anulaciones y porcentaje del total</p>
-            </div>
-            <div className="card-content p-6 h-[360px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={voidsData}
-                    dataKey="value"
-                    nameKey="reason"
-                    innerRadius={70}
-                    outerRadius={110}
-                    paddingAngle={3}
-                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-                  >
-                    {voidsData.map((entry) => (
-                      <Cell key={entry.reason} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ color: 'var(--text-foreground)' }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 rounded-2xl border border-border bg-background p-4 text-sm text-muted-foreground">
-                Total anulaciones: <span className="font-semibold text-foreground">{totalVoids}</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="card border border-border bg-card shadow-sm animate-slide-up">
-            <div className="card-header border-b border-border p-6">
-              <h2 className="card-title text-xl font-semibold">Últimas órdenes anuladas</h2>
-              <p className="text-sm text-muted-foreground mt-1">Resumen rápido de las anulaciones recientes</p>
-            </div>
-            <div className="card-content p-6 space-y-4">
-              {latestVoids.map((voidOrder) => (
-                <div key={voidOrder.id} className="rounded-3xl border border-border bg-background p-4 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{voidOrder.order}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{voidOrder.reason}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">Bs. {voidOrder.amount.toLocaleString('es-BO')}</span>
-                  </div>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Activity size={14} className="text-muted-foreground" />
-                    <span>Registro reciente</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="card border border-border bg-card shadow-sm p-6 animate-slide-up">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Control rápido</p>
-                <h3 className="text-lg font-semibold text-foreground">Descuadre total</h3>
-              </div>
-              <div className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground border border-border">
-                Bs. -100
-              </div>
-            </div>
-            <div className="mt-4 text-sm text-muted-foreground">
-              Último turno con descuadre negativo registrado. Revisa la caja y cierra con operativa para corregir discrepancias.
-            </div>
-          </section>
-        </aside>
       </div>
     </div>
   );
