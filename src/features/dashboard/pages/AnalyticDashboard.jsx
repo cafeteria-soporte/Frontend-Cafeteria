@@ -742,7 +742,7 @@ export default function CafeteriaDashboard(){
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
                   <div>
                     <div style={{fontSize:10,color:"#4a3828",marginBottom:10}}>
-                      Proyectado = promedio histórico mismo día de semana · FROM <code style={{fontSize:9,background:"#1f160a",padding:"1px 4px",borderRadius:3}}>order_items GROUP BY product_id, EXTRACT(dow)</code>
+                      Proyecto = promedio histórico mismo día de semana · FROM <code style={{fontSize:9,background:"#1f160a",padding:"1px 4px",borderRadius:3}}>order_items GROUP BY product_id, EXTRACT(dow)</code>
                     </div>
                     <div style={{height:185}}>
                       <ResponsiveContainer width="100%" height="100%">
