@@ -123,7 +123,6 @@ onClick={() => handleRangeChange(range)}               className={`rounded-full 
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Control rápido</p>
-              <h3 className="text-lg font-semibold text-foreground">Descuadre total</h3>
             </div>
             <div className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground border border-border">
               Bs. {totalDiscrepancy}
