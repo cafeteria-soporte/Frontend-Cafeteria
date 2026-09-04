@@ -9,8 +9,11 @@ import { formatCurrency } from "@/utils/formats";
 import SpinnerLoader from "@/components/ui/SpinnerLoader";
 import DashboardHeader from "../components/DashboardHeader";
 import { Card, StatTile, EmptyState, ErrorState, CHART_COLORS } from "../components/primitives";
+import { InsightsCarousel } from "../components/InsightsCarousel";
 import { useDateRange } from "../hooks/useDateRange";
 import { useDss } from "../hooks/useDss";
+import { useWeeklyForecast } from "../hooks/useWeeklyForecast";
+import { buildInsights } from "../lib/buildInsights";
 
 const TABS = [
   { key: "principal", label: "Principal" },
@@ -65,6 +68,12 @@ export function AnalyticDashboard() {
     endDate: range.to,
     crisisMode,
   });
+  const forecast = useWeeklyForecast();
+
+  const insights = useMemo(
+    () => buildInsights({ principal, predictivo, marketing, forecast, crisisMode }),
+    [principal, predictivo, marketing, forecast, crisisMode],
+  );
 
   const [selectedCashier, setSelectedCashier] = useState(0);
   const radarData = useMemo(() => {
@@ -112,6 +121,8 @@ export function AnalyticDashboard() {
           </button>
         </div>
       </DashboardHeader>
+
+      <InsightsCarousel cards={insights} loading={loading || forecast.loading} />
 
       {loading ? (
         <SpinnerLoader />
