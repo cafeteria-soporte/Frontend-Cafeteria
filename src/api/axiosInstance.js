@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://cafeteria-server-udc9.onrender.com/api/cafeteria';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({

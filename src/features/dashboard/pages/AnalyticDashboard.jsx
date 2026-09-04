@@ -515,7 +515,7 @@ function SinTurno({ahora}){
           <div style={{height:140,position:"relative"}}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={metodoPago} cx="50%" cy="50%" innerRadius={38} outerRadius:60 paddingAngle={3} dataKey="value">
+                <Pie data={metodoPago} cx="50%" cy="50%" innerRadius={38} outerRadius={60} paddingAngle={3} dataKey="value">
                   {metodoPago.map((e,i)=><Cell key={i} fill={e.color}/>)}
                 </Pie>
                 <Tooltip contentStyle={TT} formatter={v=>[`${v}%`,""]}/>

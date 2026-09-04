@@ -34,21 +34,18 @@ export const getSalesByHour = async (
   dateRange: AnalyticsDateRange
 ): Promise<SalesHourData[]> => {
   try {
-    const response = await apiClient.get<AnalyticsResponse<SalesHourData[]>>(
-      `/analytics/sales/by-period`,
-      {
-        params: {
-          startDate: dateRange.from,
-          endDate: dateRange.to,
-        },
-      }
-    );
+    const response = await apiClient.get(`/analytics/sales/by-period`, {
+      params: {
+        startDate: dateRange.from,
+        endDate: dateRange.to,
+      },
+    });
 
-    if (response.data.status === 'success') {
-      return response.data.data;
-    }
-
-    throw new Error('Failed to fetch sales by hour');
+    // El backend devuelve el array directo (o { data: [...] }).
+    const rows = Array.isArray(response.data)
+      ? response.data
+      : (response.data?.data ?? []);
+    return rows as SalesHourData[];
   } catch (error) {
     console.error('Error fetching sales by hour:', error);
     throw error;
@@ -62,22 +59,18 @@ export const getTopProducts = async (
   dateRange: AnalyticsDateRange
 ): Promise<TopProductData[]> => {
   try {
-    const response = await apiClient.get<AnalyticsResponse<TopProductData[]>>(
-      `/analytics/sales/top-products`,
-      {
-        params: {
-          startDate: dateRange.from,
-          endDate: dateRange.to,
-          limit: 5,
-        },
-      }
-    );
+    const response = await apiClient.get(`/analytics/sales/top-products`, {
+      params: {
+        startDate: dateRange.from,
+        endDate: dateRange.to,
+        limit: 5,
+      },
+    });
 
-    if (response.data.status === 'success') {
-      return response.data.data;
-    }
-
-    throw new Error('Failed to fetch top products');
+    const rows = Array.isArray(response.data)
+      ? response.data
+      : (response.data?.data ?? []);
+    return rows as TopProductData[];
   } catch (error) {
     console.error('Error fetching top products:', error);
     throw error;

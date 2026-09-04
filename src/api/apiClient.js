@@ -1,34 +1,47 @@
-const API_BASE_URL = "https://cafeteria-server-udc9.onrender.com/api/cafeteria";
+import axios from "axios";
 
-export const apiClient = async (endpoint, options = {}) => {
-  const token = localStorage.getItem("accessToken");
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+// Instancia axios compartida (misma config que axiosInstance).
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: { "Content-Type": "application/json" },
+});
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Error ${response.status}`);
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token && token !== "undefined" && token !== "null") {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userData");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
   }
+);
 
-  if (response.status === 204) return null;
-
-  return response.json();
-};
-
+// Normaliza distintas formas de respuesta a un array plano.
 export const normalizeApiList = (data) => {
   if (Array.isArray(data)) return data;
-
   if (Array.isArray(data?.items)) return data.items;
   if (Array.isArray(data?.data)) return data.data;
   if (Array.isArray(data?.results)) return data.results;
   if (Array.isArray(data?.content)) return data.content;
-
   return [];
 };
+
+export default apiClient;
