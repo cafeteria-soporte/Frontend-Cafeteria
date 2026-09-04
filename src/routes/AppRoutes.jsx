@@ -46,6 +46,7 @@ import { PantallaComprobante }             from "@/features/pos/pages/PantallaCo
 
 
 import { PantallaNotificaciones } from "@/features/notifications/components/pages/PantallaNotificaciones";
+import { PantallaLogsAuditoria } from "@/features/audit/PantallaLogsAuditoria";
 
 const AppRoutes = () => {
   return (
@@ -67,7 +68,7 @@ const AppRoutes = () => {
             <Route path="/root" element={<Navigate to={ROUTES.ROOT_DASHBOARD} replace />} />
             <Route path={ROUTES.ROOT_DASHBOARD} element={<DashboardAdminPage />} />
             <Route path={ROUTES.ROOT_ADMINISTRADORES} element={<PantallaGestionAdministradores />} />
-            <Route path={ROUTES.ROOT_LOGS} element={<div>Logs</div>} />
+            <Route path={ROUTES.ROOT_LOGS} element={<PantallaLogsAuditoria />} />
             <Route path={ROUTES.ROOT_CONFIGURACION} element={<PantallaConfiguracionGlobal />} />
             <Route path={ROUTES.ROOT_BACKUPS} element={<div>Backups</div>} />
           </Route>
@@ -88,7 +89,6 @@ const AppRoutes = () => {
             <Route path={ROUTES.AJUSTE_STOCK} element={<PantallaAjusteStock />} />
             <Route path={ROUTES.HISTORIAL_STOCK} element={<HistorialMovimientosStock />} />
             <Route path={ROUTES.TURNOS} element={<PantallaTurnos />} />
-            <Route path={ROUTES.LOGS_ADMIN} element={<div>Logs</div>} />
             <Route path={ROUTES.NOTIFICACIONES} element={<PantallaNotificaciones />} />
           </Route>
 

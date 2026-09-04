@@ -36,7 +36,6 @@ const SIDEBAR_LINKS = {
     { title: "Ajuste de Stock",     icon: ArrowLeftRight,  path: ROUTES.AJUSTE_STOCK },
     { title: "Historial Stock",     icon: History,         path: ROUTES.HISTORIAL_STOCK },
     { title: "Turnos",              icon: ClipboardList,   path: ROUTES.TURNOS },
-    { title: "Logs auditoría",      icon: FileText,        path: ROUTES.LOGS_ADMIN },
     { title: "Notificaciones",      icon: Bell,            path: ROUTES.NOTIFICACIONES },
   ],
 
