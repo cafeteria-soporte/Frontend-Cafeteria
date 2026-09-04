@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const CLOUD_NAME = 'dovqtb1c9';
-const UPLOAD_PRESET = 'cafeteria_fotos'; 
+const CLOUD_NAME = 'osvmidoz';
+const UPLOAD_PRESET = 'wbebvnck';
 export const uploadToCloudinary = async (file: string | Blob) => {
   const formData = new FormData();
   formData.append('file', file);
