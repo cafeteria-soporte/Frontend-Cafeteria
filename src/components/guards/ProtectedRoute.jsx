@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
 import { MainLayout } from "@/layouts/MainLayout";
 
-const PROTECTED_ANALYTICS_PATHS = ["/analytics", "/auditoria-caja", "/inventario"];
+const PROTECTED_ANALYTICS_PATHS = ["/analytics", "/ventas-analytics", "/auditoria-caja", "/inventario"];
 
 const normalize = (s) => (typeof s === 'string' ? s.trim().toLowerCase() : s);
 

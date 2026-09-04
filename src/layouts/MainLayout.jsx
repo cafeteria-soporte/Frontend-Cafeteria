@@ -6,7 +6,7 @@ import {
   Bell, LogOut, Sun, Moon, Store, PanelLeft,
   ShoppingCart, Package, Tag, ArrowLeftRight,
   History, ClipboardList, ShieldAlert, ListOrdered,
-  PieChart, UserCircle, KeyRound, Menu, X,
+  PieChart, UserCircle, KeyRound, Menu, X, TrendingUp,
   User,
 } from "lucide-react";
 import { ROUTES } from "@/utils/constants";
@@ -27,6 +27,7 @@ const SIDEBAR_LINKS = {
   admin: [
     { title: "Dashboard",                        icon: LayoutDashboard, path: ROUTES.DASHBOARD },
     { title: "Dashboard Gerencial (DSS)",        icon: PieChart,        path: ROUTES.ANALYTICS },
+    { title: "Análisis de Ventas (DSS)",         icon: TrendingUp,      path: ROUTES.VENTAS_ANALYTICS },
     { title: "Auditoría de Cajas (DSS)",        icon: ShieldAlert,     path: "/auditoria-caja" },
     { title: "Inventario (DSS)",                icon: ClipboardList,   path: ROUTES.INVENTORY },
     { title: "Cajeros",                          icon: Users,           path: ROUTES.CAJEROS },

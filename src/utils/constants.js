@@ -15,6 +15,7 @@ export const ROUTES = {
 
   DASHBOARD:                "/dashboard",
   ANALYTICS:                "/analytics",
+  VENTAS_ANALYTICS:         "/ventas-analytics",
   INVENTORY:                "/inventario",
   CAJEROS:                  "/cajeros",
   PRODUCTOS:                "/productos",

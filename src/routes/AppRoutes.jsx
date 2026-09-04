@@ -27,6 +27,7 @@ import { PantallaGestionProductos } from "@/features/products/pages/PantallaGest
 import { PantallaGestionCategorias } from "@/features/products/pages/PantallaGestionCategorias";
 import FinancialDashboard from "@/features/dashboard/pages/FinancialDashboard";
 import InventoryDashboard from "@/features/dashboard/pages/InventoryDashboard";
+import { SalesDashboard } from "@/features/dashboard/pages/SalesDashboard";
 
 import { PantallaAjusteStock } from "@/features/inventory/pages/PantallaAjusteStock";
 import { HistorialMovimientosStock } from "@/features/inventory/pages/HistorialMovimeintosStock";
@@ -73,6 +74,7 @@ const AppRoutes = () => {
 
           <Route element={<ProtectedRoute allowedRoles={["root", "admin"]} />}>
             <Route path={ROUTES.ANALYTICS} element={<AnalyticDashboard />} />
+            <Route path={ROUTES.VENTAS_ANALYTICS} element={<SalesDashboard />} />
             <Route path="/auditoria-caja" element={<FinancialDashboard />} />
             <Route path={ROUTES.INVENTORY} element={<InventoryDashboard />} />
           </Route>
