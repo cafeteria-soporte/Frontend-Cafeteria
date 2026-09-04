@@ -30,7 +30,8 @@ const URGENCY_META = {
   baja: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
 };
 
-function Gauge({ score, threshold = 80 }) {
+function Gauge({ score: rawScore, threshold = 80 }) {
+  const score = Math.max(0, Math.min(100, Math.round(rawScore || 0)));
   const danger = score >= threshold;
   return (
     <div className="flex items-center gap-3">
@@ -166,12 +167,17 @@ export function AnalyticDashboard() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <StatTile
-                  label="Costo de oportunidad (quiebres de stock)"
-                  value={formatCurrency(principal.holisticKpis.opportunityCostBs)}
-                  hint="Bs que se dejan de vender por productos sin stock"
-                  tone={principal.holisticKpis.opportunityCostBs > 0 ? "warn" : "good"}
-                />
+                {(() => {
+                  const opp = Math.max(0, principal.holisticKpis.opportunityCostBs || 0);
+                  return (
+                    <StatTile
+                      label="Costo de oportunidad (quiebres de stock)"
+                      value={formatCurrency(opp)}
+                      hint="Bs que se dejan de vender por productos sin stock"
+                      tone={opp > 0 ? "warn" : "good"}
+                    />
+                  );
+                })()}
                 <StatTile
                   label="Cajeros evaluados"
                   value={principal.holisticKpis.cashierEfficiencyRanking.length}
